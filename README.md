@@ -2,7 +2,7 @@
 <h1 align="center">
   <img src="https://user-images.githubusercontent.com/6492229/120841024-45e8f680-c56b-11eb-9802-1697a0f84bea.png" width="128">
   <br>
-  react-native-paper-autocomplete
+  react-native-paper-autocomplete (⚠️ still in beta)
 </h1>
 
 <p align="center">
