@@ -483,7 +483,7 @@ export default function Autocomplete<ItemT>(
           onBlur={blur}
           onFocus={focus}
           blurOnSubmit={false}
-          value={hasMultipleValue || inputValue.length > 0 ? ' ' : ''}
+          value={hasMultipleValue || (inputValue && inputValue.length > 0) ? ' ' : ''}
           {...inputProps}
           style={[
             // @ts-ignore
