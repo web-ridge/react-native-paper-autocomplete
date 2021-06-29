@@ -36,6 +36,7 @@ import AutocompleteItem from './AutocompleteItem';
 // https://ej2.syncfusion.com/react/documentation/drop-down-list/accessibility/
 
 type PaperInputProps = React.ComponentProps<typeof TextInput>;
+
 export function getFlatListItemLayout(
   _: any[] | undefined | null,
   index: number
@@ -211,6 +212,7 @@ export default function Autocomplete<ItemT>(
     });
   };
 
+  const inputLayoutRef = useLatest(inputLayout);
   const recalculateLayout = React.useCallback(() => {
     if (Platform.OS !== 'web') {
       return;
@@ -219,22 +221,32 @@ export default function Autocomplete<ItemT>(
     if (!inputContainerRef.current) {
       return;
     }
+
     inputContainerRef.current.measureInWindow(
       (x: number, y: number, width: number, height: number) => {
-        setInputLayout({
-          x,
-          y,
-          width,
-          height,
-        });
+        const old = inputLayoutRef.current;
+
+        if (
+          old.x !== x ||
+          old.y !== y ||
+          old.width !== width ||
+          old.height !== height
+        ) {
+          setInputLayout({
+            x,
+            y,
+            width,
+            height,
+          });
+        }
       }
     );
-  }, [setInputLayout, inputContainerRef]);
+  }, [setInputLayout, inputLayoutRef, inputContainerRef]);
 
   // update left/top of textinput
   React.useEffect(() => {
     recalculateLayout();
-  }, [value, recalculateLayout]);
+  });
 
   const filterOptionsRef = useLatest(filterOptions);
   const groupByRef = useLatest(groupBy);
@@ -467,6 +479,17 @@ export default function Autocomplete<ItemT>(
 
   const hasMultipleValue = multiple && (values || []).length > 0;
 
+  const inputStyle = (inputProps as any)?.style;
+  const backgroundColor = React.useMemo(() => {
+    if (inputStyle) {
+      const flattenStyle = StyleSheet.flatten(inputStyle);
+      if (flattenStyle.backgroundColor) {
+        return flattenStyle.backgroundColor;
+      }
+    }
+    return theme.colors.background;
+  }, [theme, inputStyle]);
+
   return (
     <View
       style={[styles.menu, style]}
@@ -538,10 +561,7 @@ export default function Autocomplete<ItemT>(
       {multiple && (
         <View
           testID="autocomplete-chips"
-          style={[
-            styles.chipsWrapper,
-            { backgroundColor: theme.colors.background },
-          ]}
+          style={[styles.chipsWrapper, { backgroundColor }]}
           onLayout={layoutChips}
           pointerEvents="box-none"
         >
@@ -561,7 +581,7 @@ export default function Autocomplete<ItemT>(
         <Portal>
           <View
             pointerEvents="box-none"
-            style={StyleSheet.absoluteFill}
+            style={[StyleSheet.absoluteFill]}
             // @ts-ignore
             accessibilityExpanded={visible}
           >
