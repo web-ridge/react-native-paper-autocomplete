@@ -526,6 +526,7 @@ export default function Autocomplete<ItemT>(
                 : undefined,
             },
           ]}
+          mode={'outlined'}
           //@ts-ignore
           accessibilityHasPopup={true}
           render={(params) => {
