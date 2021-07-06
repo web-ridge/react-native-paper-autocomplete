@@ -156,16 +156,22 @@ export default function Autocomplete<ItemT>(
     getOptionDescription = (option: ItemT) => (option as any).description,
     filterOptions = (a, b) => filterOptionsFunc<ItemT>(a, b),
   } = props;
-  const { value: values, onChange: onChangeMultiple } =
-    props as AutocompleteMultipleProps<ItemT>;
-  const { value: singleValue, onChange: onChangeSingle } =
-    props as AutocompleteSingleProps<ItemT>;
+  const {
+    value: values,
+    onChange: onChangeMultiple,
+  } = props as AutocompleteMultipleProps<ItemT>;
+  const {
+    value: singleValue,
+    onChange: onChangeSingle,
+  } = props as AutocompleteSingleProps<ItemT>;
 
   const [highlightedIndex, setHighlightedIndex] = React.useState(0);
-  const [inputLayout, setInputLayout] =
-    React.useState<LayoutRectangle>(defaultLayout);
-  const [chipsLayout, setChipsLayout] =
-    React.useState<LayoutRectangle>(defaultLayout);
+  const [inputLayout, setInputLayout] = React.useState<LayoutRectangle>(
+    defaultLayout
+  );
+  const [chipsLayout, setChipsLayout] = React.useState<LayoutRectangle>(
+    defaultLayout
+  );
   const inputContainerRef = React.useRef<View>(null);
   const inputRef = React.useRef<NativeTextInput>(null);
   const [inputValue, setInputValue] = React.useState(defaultValue || '');
@@ -523,6 +529,7 @@ export default function Autocomplete<ItemT>(
           //@ts-ignore
           accessibilityHasPopup={true}
           render={(params) => {
+            console.log(params);
             const { paddingTop, paddingLeft } = StyleSheet.flatten(
               params.style
             );
