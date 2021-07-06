@@ -526,11 +526,9 @@ export default function Autocomplete<ItemT>(
                 : undefined,
             },
           ]}
-          mode={'outlined'}
           //@ts-ignore
           accessibilityHasPopup={true}
           render={(params) => {
-            console.log(params);
             const { paddingTop, paddingLeft } = StyleSheet.flatten(
               params.style
             );
@@ -545,7 +543,7 @@ export default function Autocomplete<ItemT>(
                   params.style,
                   {
                     paddingTop: (Number(paddingTop) || 0) + textInputTop,
-                    paddingLeft: (Number(paddingLeft) || 0) + textInputLeft,
+                    paddingLeft: (Number(paddingLeft) || 14) + textInputLeft,
                   },
                 ]}
               />
