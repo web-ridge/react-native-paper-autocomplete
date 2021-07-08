@@ -48,7 +48,7 @@ export function getFlatListItemLayout(
   };
 }
 
-interface AutocompleteBaseProps<ItemT> {
+export interface AutocompleteBaseProps<ItemT> {
   loading?: boolean;
   listProps?: Omit<
     FlatListProps<ItemT>,
@@ -72,20 +72,21 @@ interface AutocompleteBaseProps<ItemT> {
   ) => ReadonlyArray<ItemT> | null | undefined;
 }
 
-interface AutocompleteMultipleProps<ItemT>
+export interface AutocompleteMultipleProps<ItemT>
   extends AutocompleteBaseProps<ItemT> {
   multiple: true;
   value: ItemT[] | null | undefined;
   onChange: (v: ItemT[]) => void;
 }
 
-interface AutocompleteSingleProps<ItemT> extends AutocompleteBaseProps<ItemT> {
+export interface AutocompleteSingleProps<ItemT>
+  extends AutocompleteBaseProps<ItemT> {
   multiple?: undefined | false;
   value: ItemT | null | undefined;
   onChange: (v: ItemT | undefined) => void;
 }
 
-function filterOptionsFunc<ItemT>(
+export function defaultFilterOptions<ItemT>(
   a: ReadonlyArray<ItemT> | null | undefined,
   {
     inputValue,
@@ -154,7 +155,7 @@ export default function Autocomplete<ItemT>(
     getOptionLabel = (option: ItemT) =>
       (option as any).label || (option as any).name || (option as any).title,
     getOptionDescription = (option: ItemT) => (option as any).description,
-    filterOptions = (a, b) => filterOptionsFunc<ItemT>(a, b),
+    filterOptions = (a, b) => defaultFilterOptions<ItemT>(a, b),
   } = props;
   const { value: values, onChange: onChangeMultiple } =
     props as AutocompleteMultipleProps<ItemT>;
