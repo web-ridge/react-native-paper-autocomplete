@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {
   TextInputProps,
-  TouchableWithoutFeedback,
   View,
   ViewStyle,
   StyleSheet,
@@ -16,6 +15,7 @@ import {
   useWindowDimensions,
   FlatListProps,
   TextInputKeyPressEventData,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import {
   ActivityIndicator,
@@ -75,6 +75,7 @@ export interface AutocompleteBaseProps<ItemT> {
 export interface AutocompleteMultipleProps<ItemT>
   extends AutocompleteBaseProps<ItemT> {
   multiple: true;
+  dense?: boolean;
   value: ItemT[] | null | undefined;
   onChange: (v: ItemT[]) => void;
 }
@@ -82,6 +83,7 @@ export interface AutocompleteMultipleProps<ItemT>
 export interface AutocompleteSingleProps<ItemT>
   extends AutocompleteBaseProps<ItemT> {
   multiple?: undefined | false;
+  dense?: boolean;
   value: ItemT | null | undefined;
   onChange: (v: ItemT | undefined) => void;
 }
@@ -138,7 +140,7 @@ const defaultLayout: LayoutRectangle = {
 export default function Autocomplete<ItemT>(
   props: AutocompleteMultipleProps<ItemT> | AutocompleteSingleProps<ItemT>
 ) {
-  const window = useWindowDimensions();
+  const windowConst = useWindowDimensions();
   const theme = useTheme();
   const {
     loading,
@@ -157,26 +159,41 @@ export default function Autocomplete<ItemT>(
     getOptionDescription = (option: ItemT) => (option as any).description,
     filterOptions = (a, b) => defaultFilterOptions<ItemT>(a, b),
   } = props;
-  const {
-    value: values,
-    onChange: onChangeMultiple,
-  } = props as AutocompleteMultipleProps<ItemT>;
-  const {
-    value: singleValue,
-    onChange: onChangeSingle,
-  } = props as AutocompleteSingleProps<ItemT>;
+  const { value: values, onChange: onChangeMultiple } =
+    props as AutocompleteMultipleProps<ItemT>;
+  const { value: singleValue, onChange: onChangeSingle } =
+    props as AutocompleteSingleProps<ItemT>;
 
   const [highlightedIndex, setHighlightedIndex] = React.useState(0);
-  const [inputLayout, setInputLayout] = React.useState<LayoutRectangle>(
-    defaultLayout
-  );
-  const [chipsLayout, setChipsLayout] = React.useState<LayoutRectangle>(
-    defaultLayout
-  );
+  const [inputLayout, setInputLayout] =
+    React.useState<LayoutRectangle>(defaultLayout);
+  const [chipsLayout, setChipsLayout] =
+    React.useState<LayoutRectangle>(defaultLayout);
   const inputContainerRef = React.useRef<View>(null);
   const inputRef = React.useRef<NativeTextInput>(null);
   const [inputValue, setInputValue] = React.useState(defaultValue || '');
   const [visible, setVisible] = React.useState(false);
+  const ref = React.createRef();
+  const outerRef = React.useRef<any>(ref);
+
+  // React.useEffect(() => {
+  //   const ref = outerRef.current;
+  //   console.log(outerRef);
+  //   const listener = (e: WheelEvent) => {
+  //     console.log('WHEEELL');
+  //     e.preventDefault();
+  //
+  //     return false;
+  //   };
+  //
+  //   if (ref) {
+  //     ref.addEventListener('wheel', listener, { passive: false });
+  //     return () => {
+  //       ref.removeEventListener('wheel', listener);
+  //     };
+  //   }
+  //   return;
+  // }, []);
 
   const getOptionLabelRef = useLatest(getOptionLabel);
   React.useEffect(() => {
@@ -475,6 +492,9 @@ export default function Autocomplete<ItemT>(
             setHighlightedIndex(data?.length - 1);
           }
           break;
+        case 'Escape':
+          setVisible(false);
+          break;
         default:
       }
     },
@@ -515,6 +535,7 @@ export default function Autocomplete<ItemT>(
           blurOnSubmit={false}
           value={hasMultipleValue || inputValue.length > 0 ? ' ' : ''}
           {...inputProps}
+          dense={props.dense}
           style={[
             // @ts-ignore
             inputProps.style,
@@ -554,7 +575,7 @@ export default function Autocomplete<ItemT>(
         {/*// @ts-ignore*/}
         <IconButton
           testID="autocomplete-arrow"
-          style={styles.arrowIconButton}
+          style={[styles.arrowIconButton, props.dense && { bottom: -4 }]}
           icon={visible ? 'menu-up' : 'menu-down'}
           onPress={() => {
             if (visible) {
@@ -594,6 +615,7 @@ export default function Autocomplete<ItemT>(
           >
             <TouchableWithoutFeedback onPress={() => setVisible(false)}>
               <View
+                ref={outerRef}
                 style={[
                   StyleSheet.absoluteFill,
                   styles.modalBackground,
@@ -631,7 +653,7 @@ export default function Autocomplete<ItemT>(
                   minWidth: dropdownWidth,
                   borderRadius: theme.roundness,
                   maxHeight:
-                    window.height - (inputLayout.y + inputLayout.height),
+                    windowConst.height - (inputLayout.y + inputLayout.height),
                 },
               ]}
             >
@@ -687,6 +709,7 @@ const styles = StyleSheet.create({
   },
   chip: { marginRight: 6, marginBottom: 6, flexShrink: 1 },
   surface: {
+    // @ts-ignore
     position: 'absolute',
     overflow: 'hidden',
   },
