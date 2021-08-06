@@ -79,6 +79,7 @@ export interface AutocompleteMultipleProps<ItemT>
   value: ItemT[] | null | undefined;
   onChange: (v: ItemT[]) => void;
   onPressArrow: () => void;
+  outerValue: string;
 }
 
 export interface AutocompleteSingleProps<ItemT>
@@ -88,6 +89,7 @@ export interface AutocompleteSingleProps<ItemT>
   value: ItemT | null | undefined;
   onChange: (v: ItemT | undefined) => void;
   onPressArrow: () => void;
+  outerValue: string;
 }
 
 export function defaultFilterOptions<ItemT>(
@@ -177,6 +179,12 @@ export default function Autocomplete<ItemT>(
   const [visible, setVisible] = React.useState(false);
   const ref = React.createRef();
   const outerRef = React.useRef<any>(ref);
+
+  React.useEffect(() => {
+    if (props.outerValue !== inputValue) {
+      setInputValue(props.outerValue);
+    }
+  }, [props.outerValue, inputValue]);
 
   // React.useEffect(() => {
   //   const ref = outerRef.current;
