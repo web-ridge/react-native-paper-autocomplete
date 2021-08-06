@@ -181,7 +181,7 @@ export default function Autocomplete<ItemT>(
   const outerRef = React.useRef<any>(ref);
 
   React.useEffect(() => {
-    if (props.outerValue !== inputValue && props.outerValue) {
+    if (props.outerValue !== inputValue && props.outerValue !== undefined) {
       setInputValue(props.outerValue);
     }
   }, [props.outerValue, inputValue]);
