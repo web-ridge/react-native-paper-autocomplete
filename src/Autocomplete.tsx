@@ -78,6 +78,7 @@ export interface AutocompleteMultipleProps<ItemT>
   dense?: boolean;
   value: ItemT[] | null | undefined;
   onChange: (v: ItemT[]) => void;
+  onPressArrow: () => void;
 }
 
 export interface AutocompleteSingleProps<ItemT>
@@ -86,6 +87,7 @@ export interface AutocompleteSingleProps<ItemT>
   dense?: boolean;
   value: ItemT | null | undefined;
   onChange: (v: ItemT | undefined) => void;
+  onPressArrow: () => void;
 }
 
 export function defaultFilterOptions<ItemT>(
@@ -578,10 +580,14 @@ export default function Autocomplete<ItemT>(
           style={[styles.arrowIconButton, props.dense && { bottom: -4 }]}
           icon={visible ? 'menu-up' : 'menu-down'}
           onPress={() => {
-            if (visible) {
-              inputRef.current?.blur();
+            if (props.onPressArrow) {
+              props.onPressArrow();
             } else {
-              inputRef.current?.focus();
+              if (visible) {
+                inputRef.current?.blur();
+              } else {
+                inputRef.current?.focus();
+              }
             }
           }}
         />

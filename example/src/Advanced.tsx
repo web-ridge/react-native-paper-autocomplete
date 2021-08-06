@@ -19,6 +19,7 @@ function Advanced({
     { id: 3, name: 'Bjart von Klef', gender: 'boy' },
     { id: 4, name: 'Riesjard Lindhoe', gender: 'boy' },
   ]);
+
   const [value, setValue] = React.useState(
     multiple ? [options[0], options[1]] : options[0]
   );
