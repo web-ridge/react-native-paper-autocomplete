@@ -78,8 +78,8 @@ export interface AutocompleteMultipleProps<ItemT>
   dense?: boolean;
   value: ItemT[] | null | undefined;
   onChange: (v: ItemT[]) => void;
-  onPressArrow: () => void;
-  outerValue: string;
+  onPressArrow?: () => void;
+  outerValue?: string;
 }
 
 export interface AutocompleteSingleProps<ItemT>
@@ -88,8 +88,8 @@ export interface AutocompleteSingleProps<ItemT>
   dense?: boolean;
   value: ItemT | null | undefined;
   onChange: (v: ItemT | undefined) => void;
-  onPressArrow: () => void;
-  outerValue: string;
+  onPressArrow?: () => void;
+  outerValue?: string;
 }
 
 export function defaultFilterOptions<ItemT>(
@@ -181,7 +181,7 @@ export default function Autocomplete<ItemT>(
   const outerRef = React.useRef<any>(ref);
 
   React.useEffect(() => {
-    if (props.outerValue !== inputValue) {
+    if (props.outerValue !== inputValue && props.outerValue) {
       setInputValue(props.outerValue);
     }
   }, [props.outerValue, inputValue]);
