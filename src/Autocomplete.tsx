@@ -46,7 +46,6 @@ export function getFlatListItemLayout(
     length: 63,
     offset: 63 * index,
     index,
-    backgroundColor: '#FFF',
   };
 }
 
@@ -533,17 +532,14 @@ export default function Autocomplete<ItemT>(
   const [popperRef, setPopperRef] = React.useState(null);
 
   const { styles, attributes } = usePopper(referenceRef, popperRef, {
-    placement: 'bottom-start',
+    placement: 'top-start',
     strategy: 'fixed',
     // onFirstUpdate: (state) =>
     //   console.log('Popper positioned on', state.placement),
     // modifiers: [],
   });
   return (
-    <ClickOutside
-      style={{ position: 'relative' }}
-      onClickOutside={() => setVisible(false)}
-    >
+    <ClickOutside onClickOutside={() => setVisible(false)}>
       <View
         style={[innerStyles.menu, style]}
         accessibilityRole="menu"
@@ -669,34 +665,34 @@ export default function Autocomplete<ItemT>(
               <View
                 ref={setPopperRef as any}
                 {...attributes.popper}
-                style={
-                  [
-                    styles.popper,
-                    {
-                      backgroundColor: '#000',
-                      zIndex: 101,
-                    },
-                  ] as any
-                }
+                style={styles.popper as any}
               >
-                {groupBy ? (
-                  <SectionListComponent<ItemT>
-                    {...listProps}
-                    {...innerListProps}
-                    sections={sections}
-                    renderSectionHeader={({ section: { title } }: any) => (
-                      // @ts-ignore
-                      <List.Subheader>{title}</List.Subheader>
-                    )}
-                  />
-                ) : (
-                  <FinalListComponent<ItemT>
-                    {...listProps}
-                    {...innerListProps}
-                    getItemLayout={getFlatListItemLayout}
-                    data={data}
-                  />
-                )}
+                <Surface
+                  style={{
+                    borderRadius: theme.roundness,
+                    position: 'relative',
+                    zIndex: 9999,
+                  }}
+                >
+                  {groupBy ? (
+                    <SectionListComponent<ItemT>
+                      {...listProps}
+                      {...innerListProps}
+                      sections={sections}
+                      renderSectionHeader={({ section: { title } }: any) => (
+                        // @ts-ignore
+                        <List.Subheader>{title}</List.Subheader>
+                      )}
+                    />
+                  ) : (
+                    <FinalListComponent<ItemT>
+                      {...listProps}
+                      {...innerListProps}
+                      getItemLayout={getFlatListItemLayout}
+                      data={data}
+                    />
+                  )}
+                </Surface>
               </View>
             )}
           </>
@@ -794,9 +790,7 @@ const innerStyles = StyleSheet.create({
   modalBackground: {
     flex: 1,
   },
-  menu: {
-    position: 'relative',
-  },
+  menu: {},
   chipsWrapper: {
     flexDirection: 'row',
     position: 'absolute',
