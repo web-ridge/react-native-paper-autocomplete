@@ -1,21 +1,21 @@
 import * as React from 'react';
 import {
-  TextInputProps,
-  View,
-  ViewStyle,
-  StyleSheet,
-  TextInput as NativeTextInput,
+  FlatList,
+  FlatListProps,
   LayoutChangeEvent,
   LayoutRectangle,
-  Platform,
-  TextInputFocusEventData,
   NativeSyntheticEvent,
-  FlatList,
+  Platform,
   SectionList,
-  useWindowDimensions,
-  FlatListProps,
+  StyleSheet,
+  TextInput as NativeTextInput,
+  TextInputFocusEventData,
   TextInputKeyPressEventData,
+  TextInputProps,
   TouchableWithoutFeedback,
+  useWindowDimensions,
+  View,
+  ViewStyle,
 } from 'react-native';
 import {
   ActivityIndicator,
@@ -32,8 +32,9 @@ import Color from 'color';
 import useLatest from './useLatest';
 import useAutomaticScroller from './useAutomaticScroller';
 import AutocompleteItem from './AutocompleteItem';
-
-// https://ej2.syncfusion.com/react/documentation/drop-down-list/accessibility/
+import { usePopper } from 'react-popper';
+// @ts-ignore
+import ClickOutside from './Outside';
 
 type PaperInputProps = React.ComponentProps<typeof TextInput>;
 
@@ -45,6 +46,7 @@ export function getFlatListItemLayout(
     length: 63,
     offset: 63 * index,
     index,
+    backgroundColor: '#FFF',
   };
 }
 
@@ -527,126 +529,130 @@ export default function Autocomplete<ItemT>(
     return theme.colors.background;
   }, [theme, inputStyle]);
 
+  const [referenceRef, setReferenceRef] = React.useState(null);
+  const [popperRef, setPopperRef] = React.useState(null);
+
+  const { styles, attributes } = usePopper(referenceRef, popperRef, {
+    placement: 'bottom-start',
+    strategy: 'fixed',
+    // onFirstUpdate: (state) =>
+    //   console.log('Popper positioned on', state.placement),
+    // modifiers: [],
+  });
   return (
-    <View
-      style={[styles.menu, style]}
-      accessibilityRole="menu"
-      testID="autocomplete"
+    <ClickOutside
+      style={{ position: 'relative' }}
+      onClickOutside={() => setVisible(false)}
     >
       <View
-        ref={inputContainerRef}
-        onLayout={layout}
-        style={styles.inputContainer}
+        style={[innerStyles.menu, style]}
+        accessibilityRole="menu"
+        testID="autocomplete"
       >
-        <TextInput
-          ref={inputRef}
-          onBlur={blur}
-          onFocus={focus}
-          blurOnSubmit={false}
-          value={hasMultipleValue || inputValue.length > 0 ? ' ' : ''}
-          {...inputProps}
-          dense={props.dense}
-          style={[
-            // @ts-ignore
-            inputProps.style,
-            styles.full,
-            {
-              height: hasMultipleValue
-                ? shouldEnter
-                  ? chipsLayout.height + 36 + 46
-                  : chipsLayout.height + 36
-                : undefined,
-            },
-          ]}
-          //@ts-ignore
-          accessibilityHasPopup={true}
-          render={(params) => {
-            const { paddingTop, paddingLeft } = StyleSheet.flatten(
-              params.style
-            );
-            return (
-              <NativeTextInput
-                {...params}
-                selectTextOnFocus={true}
-                value={inputValue}
-                onChangeText={changeText}
-                onKeyPress={keyPress}
-                style={[
-                  params.style,
-                  {
-                    paddingTop: (Number(paddingTop) || 0) + textInputTop,
-                    paddingLeft: (Number(paddingLeft) || 14) + textInputLeft,
-                  },
-                ]}
-              />
-            );
-          }}
-        />
-        {/*// @ts-ignore*/}
-        <IconButton
-          testID="autocomplete-arrow"
-          style={[styles.arrowIconButton, props.dense && { bottom: -4 }]}
-          icon={visible ? 'menu-up' : 'menu-down'}
-          onPress={() => {
-            if (props.onPressArrow) {
-              props.onPressArrow();
-            } else {
-              if (visible) {
-                inputRef.current?.blur();
-              } else {
-                inputRef.current?.focus();
-              }
-            }
-          }}
-        />
-      </View>
-      {multiple && (
         <View
-          testID="autocomplete-chips"
-          style={[styles.chipsWrapper, { backgroundColor }]}
-          onLayout={layoutChips}
-          pointerEvents="box-none"
+          ref={inputContainerRef}
+          onLayout={layout}
+          style={innerStyles.inputContainer}
         >
-          {values?.map((o) => (
-            <Chip
-              key={getOptionValue(o)}
-              onClose={() => remove(o)}
-              style={styles.chip}
-            >
-              {getOptionLabel(o)}
-            </Chip>
-          ))}
+          <View ref={setReferenceRef as any} style={innerStyles.full}>
+            <TextInput
+              ref={inputRef}
+              onBlur={blur}
+              onFocus={focus}
+              blurOnSubmit={false}
+              value={hasMultipleValue || inputValue.length > 0 ? ' ' : ''}
+              {...inputProps}
+              dense={props.dense}
+              style={[
+                // @ts-ignore
+                inputProps.style,
+                innerStyles.full,
+                {
+                  height: hasMultipleValue
+                    ? shouldEnter
+                      ? chipsLayout.height + 36 + 46
+                      : chipsLayout.height + 36
+                    : undefined,
+                },
+              ]}
+              //@ts-ignore
+              accessibilityHasPopup={true}
+              render={(params) => {
+                const { paddingTop, paddingLeft } = StyleSheet.flatten(
+                  params.style
+                );
+                return (
+                  <NativeTextInput
+                    {...params}
+                    selectTextOnFocus={true}
+                    value={inputValue}
+                    onChangeText={changeText}
+                    onKeyPress={keyPress}
+                    style={[
+                      params.style,
+                      {
+                        paddingTop: (Number(paddingTop) || 0) + textInputTop,
+                        paddingLeft:
+                          (Number(paddingLeft) || 14) + textInputLeft,
+                      },
+                    ]}
+                  />
+                );
+              }}
+            />
+          </View>
+          {/*// @ts-ignore*/}
+          <IconButton
+            testID="autocomplete-arrow"
+            style={[innerStyles.arrowIconButton, props.dense && { bottom: -4 }]}
+            icon={visible ? 'menu-up' : 'menu-down'}
+            onPress={() => {
+              if (props.onPressArrow) {
+                props.onPressArrow();
+              } else {
+                if (visible) {
+                  inputRef.current?.blur();
+                } else {
+                  inputRef.current?.focus();
+                }
+              }
+            }}
+          />
         </View>
-      )}
-      {loading ? <ActivityIndicator style={styles.loading} /> : null}
-      {visible ? (
-        <Portal>
+        {multiple && (
           <View
+            testID="autocomplete-chips"
+            style={[innerStyles.chipsWrapper, { backgroundColor }]}
+            onLayout={layoutChips}
             pointerEvents="box-none"
-            style={[StyleSheet.absoluteFill]}
-            // @ts-ignore
-            accessibilityExpanded={visible}
           >
-            <TouchableWithoutFeedback onPress={() => setVisible(false)}>
-              <View
-                ref={outerRef}
-                style={[
-                  StyleSheet.absoluteFill,
-                  styles.modalBackground,
-                  // { backgroundColor: theme.colors.backdrop },
-                ]}
-              />
-            </TouchableWithoutFeedback>
+            {values?.map((o) => (
+              <Chip
+                key={getOptionValue(o)}
+                onClose={() => remove(o)}
+                style={innerStyles.chip}
+              >
+                {getOptionLabel(o)}
+              </Chip>
+            ))}
+          </View>
+        )}
+        {loading ? <ActivityIndicator style={innerStyles.loading} /> : null}
+        {Platform.OS === 'web' ? (
+          <>
             {visible && (
-              // @ts-ignore
               <IconButton
                 testID="autocomplete-close"
                 size={20}
                 icon="close"
-                style={{
-                  top: inputLayout.y + (inputLayout.height - 30) / 2, // change maxHeight too!
-                  left: inputLayout.x + inputLayout.width - 36 - 36 - 16,
-                }}
+                style={[
+                  {
+                    position: 'absolute',
+                    bottom: 6, // change maxHeight too!
+                    right: 6 + 28,
+                  },
+                  props.dense && { bottom: -4 },
+                ]}
                 onPress={() => {
                   setVisible(false);
                   setInputValue('');
@@ -658,42 +664,117 @@ export default function Autocomplete<ItemT>(
                 }}
               />
             )}
-            <Surface
-              style={[
-                styles.surface,
-                {
-                  top: inputLayout.y + inputLayout.height, // change maxHeight too!
-                  left: inputLayout.x + textInputLeft,
-                  minWidth: dropdownWidth,
-                  borderRadius: theme.roundness,
-                  maxHeight:
-                    windowConst.height - (inputLayout.y + inputLayout.height),
-                },
-              ]}
-            >
-              {groupBy ? (
-                <SectionListComponent<ItemT>
-                  {...listProps}
-                  {...innerListProps}
-                  sections={sections}
-                  renderSectionHeader={({ section: { title } }: any) => (
-                    // @ts-ignore
-                    <List.Subheader>{title}</List.Subheader>
+            {visible && (
+              <View
+                ref={setPopperRef as any}
+                {...attributes.popper}
+                style={
+                  [
+                    styles.popper,
+                    {
+                      backgroundColor: '#000',
+                      zIndex: 101,
+                    },
+                  ] as any
+                }
+              >
+                {groupBy ? (
+                  <SectionListComponent<ItemT>
+                    {...listProps}
+                    {...innerListProps}
+                    sections={sections}
+                    renderSectionHeader={({ section: { title } }: any) => (
+                      // @ts-ignore
+                      <List.Subheader>{title}</List.Subheader>
+                    )}
+                  />
+                ) : (
+                  <FinalListComponent<ItemT>
+                    {...listProps}
+                    {...innerListProps}
+                    getItemLayout={getFlatListItemLayout}
+                    data={data}
+                  />
+                )}
+              </View>
+            )}
+          </>
+        ) : (
+          visible && (
+            <Portal>
+              <View
+                pointerEvents="box-none"
+                style={[StyleSheet.absoluteFill]}
+                // @ts-ignore
+                accessibilityExpanded={visible}
+              >
+                <TouchableWithoutFeedback onPress={() => setVisible(false)}>
+                  <View
+                    ref={outerRef}
+                    style={[
+                      StyleSheet.absoluteFill,
+                      innerStyles.modalBackground,
+                      // { backgroundColor: theme.colors.backdrop },
+                    ]}
+                  />
+                </TouchableWithoutFeedback>
+                <IconButton
+                  testID="autocomplete-close"
+                  size={20}
+                  icon="close"
+                  style={{
+                    top: inputLayout.y + (inputLayout.height - 30) / 2, // change maxHeight too!
+                    left: inputLayout.x + inputLayout.width - 36 - 36 - 16,
+                  }}
+                  onPress={() => {
+                    setVisible(false);
+                    setInputValue('');
+                    if (multiple) {
+                      onChangeMultiple([]);
+                    } else {
+                      onChangeSingle(undefined);
+                    }
+                  }}
+                />
+                <Surface
+                  style={[
+                    innerStyles.surface,
+                    {
+                      top: inputLayout.y + inputLayout.height, // change maxHeight too!
+                      left: inputLayout.x + textInputLeft,
+                      minWidth: dropdownWidth,
+                      borderRadius: theme.roundness,
+                      maxHeight:
+                        windowConst.height -
+                        (inputLayout.y + inputLayout.height),
+                    },
+                  ]}
+                >
+                  {groupBy ? (
+                    <SectionListComponent<ItemT>
+                      {...listProps}
+                      {...innerListProps}
+                      sections={sections}
+                      renderSectionHeader={({ section: { title } }: any) => (
+                        // @ts-ignore
+                        <List.Subheader>{title}</List.Subheader>
+                      )}
+                    />
+                  ) : (
+                    <FinalListComponent<ItemT>
+                      {...listProps}
+                      {...innerListProps}
+                      getItemLayout={getFlatListItemLayout}
+                      data={data}
+                    />
                   )}
-                />
-              ) : (
-                <FinalListComponent<ItemT>
-                  {...listProps}
-                  {...innerListProps}
-                  getItemLayout={getFlatListItemLayout}
-                  data={data}
-                />
-              )}
-            </Surface>
-          </View>
-        </Portal>
-      ) : null}
-    </View>
+                </Surface>
+              </View>
+            </Portal>
+          )
+        )}
+      </View>
+    </ClickOutside>
   );
 }
 
@@ -707,7 +788,7 @@ function usePrevious<T>(
   return ref.current;
 }
 
-const styles = StyleSheet.create({
+const innerStyles = StyleSheet.create({
   modalBackground: {
     flex: 1,
   },
