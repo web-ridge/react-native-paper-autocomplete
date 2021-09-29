@@ -533,7 +533,7 @@ export default function Autocomplete<ItemT>(
 
   const { styles, attributes } = usePopper(referenceRef, popperRef, {
     placement: 'bottom-start',
-    strategy: 'absolute',
+    strategy: 'fixed',
     // onFirstUpdate: (state) =>
     //   console.log('Popper positioned on', state.placement),
     // modifiers: [],
