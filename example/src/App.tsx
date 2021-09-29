@@ -1,24 +1,24 @@
 import * as React from 'react';
 import Advanced from './Advanced';
 import {
-  StyleSheet,
-  ScrollView,
-  View,
-  Linking,
-  Image,
   Animated,
+  Image,
+  Linking,
   Platform,
+  ScrollView,
+  StyleSheet,
+  View,
 } from 'react-native';
 
 import {
-  Title,
   Button,
-  Text,
-  Provider as PaperProvider,
-  useTheme,
   overlay,
   Paragraph,
+  Provider as PaperProvider,
   Subheading,
+  Text,
+  Title,
+  useTheme,
 } from 'react-native-paper';
 
 function AppInner() {
