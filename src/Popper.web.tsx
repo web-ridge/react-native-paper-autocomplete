@@ -10,6 +10,7 @@ export default function PopperAbstraction({
   attributes,
   styles,
   dropdownWidth,
+  maxHeight,
 }: {
   onPressOutside: () => any;
   children: any;
@@ -19,6 +20,7 @@ export default function PopperAbstraction({
   dropdownWidth: number;
   outerRef: any;
   surfaceStyle: any;
+  maxHeight: number;
 }) {
   const theme = useTheme();
   const ref = React.useRef();
@@ -38,6 +40,7 @@ export default function PopperAbstraction({
                 borderRadius: theme.roundness,
                 zIndex: 9999,
                 minWidth: dropdownWidth,
+                maxHeight: maxHeight,
               }}
             >
               {children}

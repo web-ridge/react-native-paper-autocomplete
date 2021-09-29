@@ -668,6 +668,7 @@ export default function Autocomplete<ItemT>(
           setPopperRef={setPopperRef}
           dropdownWidth={dropdownWidth}
           outerRef={outerRef}
+          maxHeight={windowConst.height - (inputLayout.y + inputLayout.height)}
           surfaceStyle={[
             innerStyles.surface,
             {
