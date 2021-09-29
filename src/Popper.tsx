@@ -16,7 +16,7 @@ export default function Popper({
   dropdownWidth: number;
   outerRef: any;
   surfaceStyle: any;
-  maxHeight: number;
+  maxHeight?: number;
 }) {
   return (
     <Portal>

@@ -59,6 +59,7 @@ export interface AutocompleteBaseProps<ItemT> {
   groupBy?: (option: ItemT) => string;
   renderInput?: (params: TextInputProps) => any;
   style?: ViewStyle;
+  maxHeight?: number;
   getOptionLabel?: (option: ItemT) => string;
   getOptionDescription?: (option: ItemT) => string | number;
   getOptionValue?: (option: ItemT) => string | number;
@@ -155,6 +156,7 @@ export default function Autocomplete<ItemT>(
     options,
     style,
     value,
+    maxHeight,
     getOptionValue = (option: ItemT) =>
       (option as any).id || (option as any).key || (option as any).value,
     getOptionLabel = (option: ItemT) =>
@@ -668,7 +670,7 @@ export default function Autocomplete<ItemT>(
           setPopperRef={setPopperRef}
           dropdownWidth={dropdownWidth}
           outerRef={outerRef}
-          maxHeight={windowConst.height - (inputLayout.y + inputLayout.height)}
+          maxHeight={maxHeight}
           surfaceStyle={[
             innerStyles.surface,
             {

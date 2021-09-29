@@ -20,7 +20,7 @@ export default function PopperAbstraction({
   dropdownWidth: number;
   outerRef: any;
   surfaceStyle: any;
-  maxHeight: number;
+  maxHeight?: number;
 }) {
   const theme = useTheme();
   const ref = React.useRef();
@@ -32,13 +32,12 @@ export default function PopperAbstraction({
         <View
           ref={setPopperRef as any}
           {...attributes.popper}
-          style={[styles.popper, { zIndex: 99999 }] as any}
+          style={styles.popper}
         >
           <View ref={ref as any}>
             <Surface
               style={{
                 borderRadius: theme.roundness,
-                zIndex: 9999,
                 minWidth: dropdownWidth,
                 maxHeight: maxHeight,
               }}
