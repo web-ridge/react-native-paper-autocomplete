@@ -3,7 +3,7 @@ import { Surface, useTheme } from 'react-native-paper';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 
-export default function Popper({
+export default function PopperAbstraction({
   onPressOutside,
   children,
   setPopperRef,
@@ -24,25 +24,29 @@ export default function Popper({
   const ref = React.useRef();
 
   useOnClickOutside(ref, onPressOutside);
-  return ReactDOM.createPortal(
-    <View
-      ref={setPopperRef as any}
-      {...attributes.popper}
-      style={[styles.popper, { zIndex: 99999 }] as any}
-    >
-      <View ref={ref as any}>
-        <Surface
-          style={{
-            borderRadius: theme.roundness,
-            zIndex: 9999,
-            minWidth: dropdownWidth,
-          }}
+  return (
+    <>
+      {ReactDOM.createPortal(
+        <View
+          ref={setPopperRef as any}
+          {...attributes.popper}
+          style={[styles.popper, { zIndex: 99999 }] as any}
         >
-          {children}
-        </Surface>
-      </View>
-    </View>,
-    document.querySelector('body')!
+          <View ref={ref as any}>
+            <Surface
+              style={{
+                borderRadius: theme.roundness,
+                zIndex: 9999,
+                minWidth: dropdownWidth,
+              }}
+            >
+              {children}
+            </Surface>
+          </View>
+        </View>,
+        document.querySelector('body')!
+      )}
+    </>
   );
 }
 
