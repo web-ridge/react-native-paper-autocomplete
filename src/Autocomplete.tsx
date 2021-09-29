@@ -648,7 +648,7 @@ export default function Autocomplete<ItemT>(
                 style={[
                   {
                     position: 'absolute',
-                    bottom: 6, // change maxHeight too!
+                    bottom: 6,
                     right: 6 + 28,
                   },
                   props.dense && { bottom: -4 },
@@ -662,6 +662,7 @@ export default function Autocomplete<ItemT>(
                     onChangeSingle(undefined);
                   }
                 }}
+                touchSoundDisabled={undefined}
               />
             )}
             {visible && (
@@ -723,7 +724,7 @@ export default function Autocomplete<ItemT>(
                   size={20}
                   icon="close"
                   style={{
-                    top: inputLayout.y + (inputLayout.height - 30) / 2, // change maxHeight too!
+                    top: inputLayout.y + (inputLayout.height - 30) / 2,
                     left: inputLayout.x + inputLayout.width - 36 - 36 - 16,
                   }}
                   onPress={() => {
@@ -735,6 +736,7 @@ export default function Autocomplete<ItemT>(
                       onChangeSingle(undefined);
                     }
                   }}
+                  touchSoundDisabled={undefined}
                 />
                 <Surface
                   style={[
