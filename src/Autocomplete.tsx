@@ -532,8 +532,8 @@ export default function Autocomplete<ItemT>(
   const [popperRef, setPopperRef] = React.useState(null);
 
   const { styles, attributes } = usePopper(referenceRef, popperRef, {
-    placement: 'top-start',
-    strategy: 'fixed',
+    placement: 'bottom-start',
+    strategy: 'absolute',
     // onFirstUpdate: (state) =>
     //   console.log('Popper positioned on', state.placement),
     // modifiers: [],
@@ -614,64 +614,64 @@ export default function Autocomplete<ItemT>(
               }
             }}
           />
+          {multiple && (
+            <View
+              testID="autocomplete-chips"
+              style={[innerStyles.chipsWrapper, { backgroundColor }]}
+              onLayout={layoutChips}
+              pointerEvents="box-none"
+            >
+              {values?.map((o) => (
+                <Chip
+                  key={getOptionValue(o)}
+                  onClose={() => remove(o)}
+                  style={innerStyles.chip}
+                >
+                  {getOptionLabel(o)}
+                </Chip>
+              ))}
+            </View>
+          )}
+          {visible && (
+            <IconButton
+              testID="autocomplete-close"
+              size={20}
+              icon="close"
+              style={[
+                {
+                  position: 'absolute',
+                  bottom: 6,
+                  right: 6 + 28,
+                },
+                props.dense && { bottom: -4 },
+              ]}
+              onPress={() => {
+                setVisible(false);
+                setInputValue('');
+                if (multiple) {
+                  onChangeMultiple([]);
+                } else {
+                  onChangeSingle(undefined);
+                }
+              }}
+              touchSoundDisabled={undefined}
+            />
+          )}
         </View>
-        {multiple && (
-          <View
-            testID="autocomplete-chips"
-            style={[innerStyles.chipsWrapper, { backgroundColor }]}
-            onLayout={layoutChips}
-            pointerEvents="box-none"
-          >
-            {values?.map((o) => (
-              <Chip
-                key={getOptionValue(o)}
-                onClose={() => remove(o)}
-                style={innerStyles.chip}
-              >
-                {getOptionLabel(o)}
-              </Chip>
-            ))}
-          </View>
-        )}
         {loading ? <ActivityIndicator style={innerStyles.loading} /> : null}
         {Platform.OS === 'web' ? (
           <>
             {visible && (
-              <IconButton
-                testID="autocomplete-close"
-                size={20}
-                icon="close"
-                style={[
-                  {
-                    position: 'absolute',
-                    bottom: 6,
-                    right: 6 + 28,
-                  },
-                  props.dense && { bottom: -4 },
-                ]}
-                onPress={() => {
-                  setVisible(false);
-                  setInputValue('');
-                  if (multiple) {
-                    onChangeMultiple([]);
-                  } else {
-                    onChangeSingle(undefined);
-                  }
-                }}
-                touchSoundDisabled={undefined}
-              />
-            )}
-            {visible && (
               <View
                 ref={setPopperRef as any}
                 {...attributes.popper}
-                style={styles.popper as any}
+                style={[styles.popper, { zIndex: 99999 }] as any}
               >
                 <Surface
                   style={{
                     borderRadius: theme.roundness,
-                    position: 'relative',
                     zIndex: 9999,
+                    minWidth: dropdownWidth,
                   }}
                 >
                   {groupBy ? (
@@ -790,7 +790,10 @@ const innerStyles = StyleSheet.create({
   modalBackground: {
     flex: 1,
   },
-  menu: {},
+  menu: {
+    // @ts-ignore
+    position: 'static',
+  },
   chipsWrapper: {
     flexDirection: 'row',
     position: 'absolute',
