@@ -807,8 +807,15 @@ const innerStyles = StyleSheet.create({
     position: 'absolute',
     overflow: 'hidden',
   },
-  inputContainer: { alignItems: 'center', flexDirection: 'row' },
-  full: { flex: 1 },
+  inputContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  full: {
+    flex: 1,
+    // @ts-ignore
+    position: 'static',
+  },
   arrowIconButton: {
     position: 'absolute',
     bottom: 5,
