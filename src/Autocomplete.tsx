@@ -68,7 +68,12 @@ export interface AutocompleteBaseProps<ItemT> {
     {
       inputValue,
       getOptionLabel,
-    }: { inputValue: string; getOptionLabel: (option: ItemT) => string }
+      getOptionDescription,
+    }: {
+      inputValue: string;
+      getOptionLabel: (option: ItemT) => string;
+      getOptionDescription?: (option: ItemT) => string;
+    }
   ) => ReadonlyArray<ItemT> | null | undefined;
 }
 
@@ -91,16 +96,25 @@ export function defaultFilterOptions<ItemT>(
   {
     inputValue,
     getOptionLabel,
-  }: { inputValue: string; getOptionLabel: (option: ItemT) => string }
+    getOptionDescription,
+  }: {
+    inputValue: string;
+    getOptionLabel: (option: ItemT) => string;
+    getOptionDescription?: (option: ItemT) => string;
+  }
 ) {
   return a?.filter((o) => {
     const oAny = o as any;
     if (!inputValue) {
       return true;
     }
-    return getOptionLabel(oAny)
-      .toLowerCase()
-      .includes(inputValue.toLowerCase());
+    const search = inputValue.toLowerCase();
+    const label = getOptionLabel(oAny) || '';
+    const description = getOptionDescription?.(oAny) || '';
+    return (
+      label.toLowerCase().includes(search) ||
+      description.toLowerCase().includes(search)
+    );
   });
 }
 
