@@ -266,6 +266,7 @@ export default function Autocomplete<ItemT>(
   const filterOptionsRef = useLatest(filterOptions);
   const groupByRef = useLatest(groupBy);
   const getOptionValueRef = useLatest(getOptionValue);
+  const getOptionDescriptionRef = useLatest(getOptionDescription);
 
   const data = React.useMemo(
     () =>
@@ -277,6 +278,7 @@ export default function Autocomplete<ItemT>(
         }),
         {
           getOptionLabel: getOptionLabelRef.current,
+          getOptionDescription: getOptionDescriptionRef.current,
           inputValue,
         }
       ),
@@ -288,6 +290,7 @@ export default function Autocomplete<ItemT>(
       options,
       getOptionValueRef,
       getOptionLabelRef,
+      getOptionDescriptionRef,
     ]
   );
 
