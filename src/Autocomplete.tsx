@@ -739,7 +739,7 @@ const innerStyles = StyleSheet.create({
   full: {
     flex: 1,
     // @ts-ignore
-    position: 'static',
+    position: Platform.OS === 'web' ? 'static' : 'relative',
   },
   arrowIconButton: {
     position: 'absolute',
