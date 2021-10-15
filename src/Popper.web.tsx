@@ -21,6 +21,7 @@ export default function PopperAbstraction({
   outerRef: any;
   surfaceStyle: any;
   maxHeight?: number;
+  visible?: boolean;
 }) {
   const theme = useTheme();
   const ref = React.useRef();

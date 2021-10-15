@@ -668,6 +668,7 @@ export default function Autocomplete<ItemT>(
           attributes={attributes}
           styles={styles}
           setPopperRef={setPopperRef}
+          visible={visible}
           dropdownWidth={dropdownWidth}
           outerRef={outerRef}
           maxHeight={maxHeight}

@@ -7,6 +7,7 @@ export default function Popper({
   children,
   surfaceStyle,
   outerRef,
+  visible,
 }: {
   onPressOutside: () => any;
   children: any;
@@ -17,6 +18,7 @@ export default function Popper({
   outerRef: any;
   surfaceStyle: any;
   maxHeight?: number;
+  visible?: boolean;
 }) {
   return (
     <Portal>
