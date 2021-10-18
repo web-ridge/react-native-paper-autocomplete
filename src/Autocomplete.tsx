@@ -719,7 +719,7 @@ function usePrevious<T>(
 }
 
 const innerStyles = StyleSheet.create({
-  menu: {},
+  menu: { position: 'relative' },
   chipsWrapper: {
     flexDirection: 'row',
     position: 'absolute',
