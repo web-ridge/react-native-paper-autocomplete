@@ -391,7 +391,7 @@ export default function Autocomplete<ItemT>(
   const [popperRef, setPopperRef] = React.useState(null);
 
   const { styles, attributes, update } = usePopper(referenceRef, popperRef, {
-    placement: 'bottom-start',
+    placement: 'top-start',
     strategy: 'fixed',
     // onFirstUpdate: (state) =>
     //   console.log('Popper positioned on', state.placement),
