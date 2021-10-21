@@ -249,7 +249,7 @@ export default function Autocomplete<ItemT>(
 
   const inputLayoutRef = useLatest(inputLayout);
   const recalculateLayout = React.useCallback(() => {
-    if (Platform.OS !== 'web') {
+    if (Platform.OS === 'web') {
       return;
     }
 
@@ -664,7 +664,9 @@ export default function Autocomplete<ItemT>(
       {loading ? <ActivityIndicator style={innerStyles.loading} /> : null}
       {visible && (
         <Popper
-          onPressOutside={() => setVisible(false)}
+          onPressOutside={() => {
+            setVisible(false);
+          }}
           attributes={attributes}
           styles={styles}
           setPopperRef={setPopperRef}
@@ -681,6 +683,7 @@ export default function Autocomplete<ItemT>(
               borderRadius: theme.roundness,
               maxHeight:
                 windowConst.height - (inputLayout.y + inputLayout.height),
+              zIndex: 10000,
             },
           ]}
         >
