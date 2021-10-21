@@ -1,23 +1,24 @@
 import * as React from 'react';
 import Advanced from './Advanced';
 import {
-  StyleSheet,
-  ScrollView,
-  View,
-  Linking,
-  Image,
   Animated,
+  Image,
+  Linking,
   Platform,
+  ScrollView,
+  StyleSheet,
+  View,
 } from 'react-native';
 
 import {
-  Title,
   Button,
-  Text,
-  Provider as PaperProvider,
-  useTheme,
   overlay,
   Paragraph,
+  Provider as PaperProvider,
+  Subheading,
+  Text,
+  Title,
+  useTheme,
 } from 'react-native-paper';
 
 function AppInner() {
@@ -80,16 +81,47 @@ function AppInner() {
         ]}
       >
         <View>
+          <Title>Single and multiple</Title>
           <Advanced multiple={true} />
           <Advanced multiple={false} />
           <Advanced multiple={false} />
           <Advanced multiple={true} />
         </View>
-        <Enter />
-        <Enter />
-
-        <Enter />
       </Animated.View>
+      <Enter />
+      <Enter />
+
+      <Enter />
+      <Animated.View
+        style={[
+          styles.content,
+          styles.contentShadow,
+          {
+            backgroundColor,
+          },
+        ]}
+      >
+        <View>
+          <Title>Input modes</Title>
+          <Enter />
+          <Subheading>Outlined</Subheading>
+          <Advanced multiple={false} mode={'outlined'} />
+          <Enter />
+          <Subheading>Dense outlined</Subheading>
+          <Advanced multiple={false} mode={'outlined'} dense={true} />
+          <Enter />
+          <Subheading>Flat</Subheading>
+          <Advanced multiple={false} mode={'flat'} />
+          <Enter />
+          <Subheading>Dense flat</Subheading>
+          <Advanced multiple={false} mode={'flat'} dense={true} />
+          <Enter />
+        </View>
+      </Animated.View>
+      <Enter />
+      <Enter />
+
+      <Enter />
 
       <Enter />
       <Enter />
@@ -157,7 +189,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
     padding: 24,
     alignSelf: 'center',
-    flex: 1,
+    // flex: 1,
   },
   contentInline: {
     padding: 0,
@@ -183,7 +215,7 @@ const styles = StyleSheet.create({
   buttons: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 24 },
   pickButton: { marginTop: 6 },
   buttonSeparator: { width: 6 },
-  enter: { height: 12 },
+  enter: { height: 12, zIndex: 100 },
   label: { width: 100, fontSize: 16 },
   row: { paddingTop: 12, paddingBottom: 12, flexDirection: 'row' },
   customModal: {

@@ -4,13 +4,22 @@ import * as React from 'react';
 // @ts-ignore
 import { Autocomplete } from 'react-native-paper-autocomplete';
 
-function Advanced({ multiple }: { multiple: boolean }) {
+function Advanced({
+  multiple,
+  mode,
+  dense,
+}: {
+  multiple?: boolean;
+  mode?: 'flat' | 'outlined' | undefined;
+  dense?: boolean;
+}) {
   const [options] = React.useState([
     { id: 1, name: 'Ruben von der Vein', gender: 'girl' },
     { id: 2, name: 'Pjotr Versjuurre', gender: 'boy' },
     { id: 3, name: 'Bjart von Klef', gender: 'boy' },
     { id: 4, name: 'Riesjard Lindhoe', gender: 'boy' },
   ]);
+
   const [value, setValue] = React.useState(
     multiple ? [options[0], options[1]] : options[0]
   );
@@ -30,8 +39,10 @@ function Advanced({ multiple }: { multiple: boolean }) {
       options={options}
       // if you want to group on something
       groupBy={(option) => option.gender}
+      dense={dense}
       //@ts-ignore
       inputProps={{
+        mode: mode,
         placeholder: 'Select user',
         // ...all other props which are available in react native paper
         onChangeText: (_) => {

@@ -1,29 +1,26 @@
 import * as React from 'react';
 import {
-  TextInputProps,
-  TouchableWithoutFeedback,
-  View,
-  ViewStyle,
-  StyleSheet,
-  TextInput as NativeTextInput,
+  FlatList,
+  FlatListProps,
   LayoutChangeEvent,
   LayoutRectangle,
-  Platform,
-  TextInputFocusEventData,
   NativeSyntheticEvent,
-  FlatList,
+  Platform,
   SectionList,
-  useWindowDimensions,
-  FlatListProps,
+  StyleSheet,
+  TextInput as NativeTextInput,
+  TextInputFocusEventData,
   TextInputKeyPressEventData,
+  TextInputProps,
+  useWindowDimensions,
+  View,
+  ViewStyle,
 } from 'react-native';
 import {
   ActivityIndicator,
   Chip,
   IconButton,
   List,
-  Portal,
-  Surface,
   TextInput,
   useTheme,
 } from 'react-native-paper';
@@ -32,8 +29,10 @@ import Color from 'color';
 import useLatest from './useLatest';
 import useAutomaticScroller from './useAutomaticScroller';
 import AutocompleteItem from './AutocompleteItem';
-
-// https://ej2.syncfusion.com/react/documentation/drop-down-list/accessibility/
+import { usePopper } from 'react-popper';
+// @ts-ignore
+import ClickOutside from './Outside';
+import Popper from './Popper';
 
 type PaperInputProps = React.ComponentProps<typeof TextInput>;
 
@@ -60,6 +59,7 @@ export interface AutocompleteBaseProps<ItemT> {
   groupBy?: (option: ItemT) => string;
   renderInput?: (params: TextInputProps) => any;
   style?: ViewStyle;
+  maxHeight?: number;
   getOptionLabel?: (option: ItemT) => string;
   getOptionDescription?: (option: ItemT) => string | number;
   getOptionValue?: (option: ItemT) => string | number;
@@ -80,15 +80,21 @@ export interface AutocompleteBaseProps<ItemT> {
 export interface AutocompleteMultipleProps<ItemT>
   extends AutocompleteBaseProps<ItemT> {
   multiple: true;
+  dense?: boolean;
   value: ItemT[] | null | undefined;
   onChange: (v: ItemT[]) => void;
+  onPressArrow?: () => void;
+  outerValue?: string;
 }
 
 export interface AutocompleteSingleProps<ItemT>
   extends AutocompleteBaseProps<ItemT> {
   multiple?: undefined | false;
+  dense?: boolean;
   value: ItemT | null | undefined;
   onChange: (v: ItemT | undefined) => void;
+  onPressArrow?: () => void;
+  outerValue?: string;
 }
 
 export function defaultFilterOptions<ItemT>(
@@ -152,7 +158,7 @@ const defaultLayout: LayoutRectangle = {
 export default function Autocomplete<ItemT>(
   props: AutocompleteMultipleProps<ItemT> | AutocompleteSingleProps<ItemT>
 ) {
-  const window = useWindowDimensions();
+  const windowConst = useWindowDimensions();
   const theme = useTheme();
   const {
     loading,
@@ -164,6 +170,7 @@ export default function Autocomplete<ItemT>(
     options,
     style,
     value,
+    maxHeight,
     getOptionValue = (option: ItemT) =>
       (option as any).id || (option as any).key || (option as any).value,
     getOptionLabel = (option: ItemT) =>
@@ -185,6 +192,33 @@ export default function Autocomplete<ItemT>(
   const inputRef = React.useRef<NativeTextInput>(null);
   const [inputValue, setInputValue] = React.useState(defaultValue || '');
   const [visible, setVisible] = React.useState(false);
+  const ref = React.createRef();
+  const outerRef = React.useRef<any>(ref);
+
+  React.useEffect(() => {
+    if (props.outerValue !== inputValue && props.outerValue !== undefined) {
+      setInputValue(props.outerValue);
+    }
+  }, [props.outerValue, inputValue]);
+
+  // React.useEffect(() => {
+  //   const ref = outerRef.current;
+  //   console.log(outerRef);
+  //   const listener = (e: WheelEvent) => {
+  //     console.log('WHEEELL');
+  //     e.preventDefault();
+  //
+  //     return false;
+  //   };
+  //
+  //   if (ref) {
+  //     ref.addEventListener('wheel', listener, { passive: false });
+  //     return () => {
+  //       ref.removeEventListener('wheel', listener);
+  //     };
+  //   }
+  //   return;
+  // }, []);
 
   const getOptionLabelRef = useLatest(getOptionLabel);
   React.useEffect(() => {
@@ -229,7 +263,7 @@ export default function Autocomplete<ItemT>(
 
   const inputLayoutRef = useLatest(inputLayout);
   const recalculateLayout = React.useCallback(() => {
-    if (Platform.OS !== 'web') {
+    if (Platform.OS === 'web') {
       return;
     }
 
@@ -369,6 +403,17 @@ export default function Autocomplete<ItemT>(
     onChangeSingle,
     values,
   ]);
+
+  const [referenceRef, setReferenceRef] = React.useState(null);
+  const [popperRef, setPopperRef] = React.useState(null);
+
+  const { styles, attributes, update } = usePopper(referenceRef, popperRef, {
+    placement: 'top-start',
+    strategy: 'fixed',
+    // onFirstUpdate: (state) =>
+    //   console.log('Popper positioned on', state.placement),
+    // modifiers: [],
+  });
   const press = React.useCallback(
     (o: ItemT) => {
       if (multiple) {
@@ -378,6 +423,10 @@ export default function Autocomplete<ItemT>(
       } else {
         onChangeSingle(o);
         setVisible(false);
+      }
+
+      if (update && Platform.OS === 'web') {
+        update();
       }
     },
     [multiple, setInputValue, onChangeMultiple, onChangeSingle, values]
@@ -410,6 +459,7 @@ export default function Autocomplete<ItemT>(
   const highlightedColor = theme.dark
     ? Color(theme.colors.text).alpha(0.2).rgb().string()
     : Color(theme.colors.text).alpha(0.1).rgb().string();
+
   const innerListProps = {
     testID: 'autocomplete-list',
     renderItem: ({
@@ -486,6 +536,9 @@ export default function Autocomplete<ItemT>(
             setHighlightedIndex(data?.length - 1);
           }
           break;
+        case 'Escape':
+          setVisible(false);
+          break;
         default:
       }
     },
@@ -507,167 +560,170 @@ export default function Autocomplete<ItemT>(
     }
     return theme.colors.background;
   }, [theme, inputStyle]);
-
   return (
     <View
-      style={[styles.menu, style]}
+      style={[innerStyles.menu, style]}
       accessibilityRole="menu"
       testID="autocomplete"
     >
       <View
         ref={inputContainerRef}
         onLayout={layout}
-        style={styles.inputContainer}
+        style={innerStyles.inputContainer}
       >
-        <TextInput
-          ref={inputRef}
-          onBlur={blur}
-          onFocus={focus}
-          blurOnSubmit={false}
-          value={hasMultipleValue || inputValue.length > 0 ? ' ' : ''}
-          {...inputProps}
-          style={[
-            // @ts-ignore
-            inputProps.style,
-            styles.full,
-            {
-              height: hasMultipleValue
-                ? shouldEnter
-                  ? chipsLayout.height + 36 + 46
-                  : chipsLayout.height + 36
-                : undefined,
-            },
-          ]}
-          //@ts-ignore
-          accessibilityHasPopup={true}
-          render={(params) => {
-            const { paddingTop, paddingLeft } = StyleSheet.flatten(
-              params.style
-            );
-            return (
-              <NativeTextInput
-                {...params}
-                selectTextOnFocus={true}
-                value={inputValue}
-                onChangeText={changeText}
-                onKeyPress={keyPress}
-                style={[
-                  params.style,
-                  {
-                    paddingTop: (Number(paddingTop) || 0) + textInputTop,
-                    paddingLeft: (Number(paddingLeft) || 0) + textInputLeft,
-                  },
-                ]}
-              />
-            );
-          }}
-        />
+        <View ref={setReferenceRef as any} style={innerStyles.full}>
+          <TextInput
+            ref={inputRef}
+            onBlur={blur}
+            onFocus={focus}
+            blurOnSubmit={false}
+            value={hasMultipleValue || inputValue.length > 0 ? ' ' : ''}
+            {...inputProps}
+            dense={props.dense}
+            style={[
+              // @ts-ignore
+              inputProps.style,
+              innerStyles.full,
+              {
+                height: hasMultipleValue
+                  ? shouldEnter
+                    ? chipsLayout.height + 36 + 46
+                    : chipsLayout.height + 36
+                  : undefined,
+              },
+            ]}
+            //@ts-ignore
+            accessibilityHasPopup={true}
+            render={(params) => {
+              const { paddingTop, paddingLeft } = StyleSheet.flatten(
+                params.style
+              );
+              return (
+                <NativeTextInput
+                  {...params}
+                  selectTextOnFocus={true}
+                  value={inputValue}
+                  onChangeText={changeText}
+                  onKeyPress={keyPress}
+                  style={[
+                    params.style,
+                    {
+                      paddingTop: (Number(paddingTop) || 0) + textInputTop,
+                      paddingLeft: (Number(paddingLeft) || 14) + textInputLeft,
+                    },
+                  ]}
+                />
+              );
+            }}
+          />
+        </View>
         {/*// @ts-ignore*/}
         <IconButton
           testID="autocomplete-arrow"
-          style={styles.arrowIconButton}
+          style={[innerStyles.arrowIconButton, props.dense && { bottom: -4 }]}
           icon={visible ? 'menu-up' : 'menu-down'}
           onPress={() => {
-            if (visible) {
-              inputRef.current?.blur();
+            if (props.onPressArrow) {
+              props.onPressArrow();
             } else {
-              inputRef.current?.focus();
+              if (visible) {
+                inputRef.current?.blur();
+              } else {
+                inputRef.current?.focus();
+              }
             }
           }}
         />
-      </View>
-      {multiple && (
-        <View
-          testID="autocomplete-chips"
-          style={[styles.chipsWrapper, { backgroundColor }]}
-          onLayout={layoutChips}
-          pointerEvents="box-none"
-        >
-          {values?.map((o) => (
-            <Chip
-              key={getOptionValue(o)}
-              onClose={() => remove(o)}
-              style={styles.chip}
-            >
-              {getOptionLabel(o)}
-            </Chip>
-          ))}
-        </View>
-      )}
-      {loading ? <ActivityIndicator style={styles.loading} /> : null}
-      {visible ? (
-        <Portal>
+        {multiple && (
           <View
+            testID="autocomplete-chips"
+            style={[innerStyles.chipsWrapper, { backgroundColor }]}
+            onLayout={layoutChips}
             pointerEvents="box-none"
-            style={[StyleSheet.absoluteFill]}
-            // @ts-ignore
-            accessibilityExpanded={visible}
           >
-            <TouchableWithoutFeedback onPress={() => setVisible(false)}>
-              <View
-                style={[
-                  StyleSheet.absoluteFill,
-                  styles.modalBackground,
-                  // { backgroundColor: theme.colors.backdrop },
-                ]}
-              />
-            </TouchableWithoutFeedback>
-            {visible && (
-              // @ts-ignore
-              <IconButton
-                testID="autocomplete-close"
-                size={20}
-                icon="close"
-                style={{
-                  top: inputLayout.y + (inputLayout.height - 30) / 2, // change maxHeight too!
-                  left: inputLayout.x + inputLayout.width - 36 - 36 - 16,
-                }}
-                onPress={() => {
-                  setVisible(false);
-                  setInputValue('');
-                  if (multiple) {
-                    onChangeMultiple([]);
-                  } else {
-                    onChangeSingle(undefined);
-                  }
-                }}
-              />
-            )}
-            <Surface
-              style={[
-                styles.surface,
-                {
-                  top: inputLayout.y + inputLayout.height, // change maxHeight too!
-                  left: inputLayout.x + textInputLeft,
-                  minWidth: dropdownWidth,
-                  borderRadius: theme.roundness,
-                  maxHeight:
-                    window.height - (inputLayout.y + inputLayout.height),
-                },
-              ]}
-            >
-              {groupBy ? (
-                <SectionListComponent<ItemT>
-                  {...listProps}
-                  {...innerListProps}
-                  sections={sections}
-                  renderSectionHeader={({ section: { title } }: any) => (
-                    // @ts-ignore
-                    <List.Subheader>{title}</List.Subheader>
-                  )}
-                />
-              ) : (
-                <FinalListComponent<ItemT>
-                  {...listProps}
-                  {...innerListProps}
-                  getItemLayout={getFlatListItemLayout}
-                  data={data}
-                />
-              )}
-            </Surface>
+            {values?.map((o) => (
+              <Chip
+                key={getOptionValue(o)}
+                onClose={() => remove(o)}
+                style={innerStyles.chip}
+              >
+                {getOptionLabel(o)}
+              </Chip>
+            ))}
           </View>
-        </Portal>
-      ) : null}
+        )}
+        {(inputValue || (multiple && values && values.length > 0)) && (
+          <IconButton
+            testID="autocomplete-close"
+            size={20}
+            icon="close"
+            style={[
+              {
+                position: 'absolute',
+                bottom: 6,
+                right: 6 + 28,
+              },
+              props.dense && { bottom: -4 },
+            ]}
+            onPress={() => {
+              setVisible(false);
+              setInputValue('');
+              if (multiple) {
+                onChangeMultiple([]);
+              } else {
+                onChangeSingle(undefined);
+              }
+            }}
+            touchSoundDisabled={undefined}
+          />
+        )}
+      </View>
+      {loading ? <ActivityIndicator style={innerStyles.loading} /> : null}
+      {visible && (
+        <Popper
+          onPressOutside={() => {
+            setVisible(false);
+          }}
+          attributes={attributes}
+          styles={styles}
+          setPopperRef={setPopperRef}
+          visible={visible}
+          dropdownWidth={dropdownWidth}
+          outerRef={outerRef}
+          maxHeight={maxHeight}
+          surfaceStyle={[
+            innerStyles.surface,
+            {
+              top: inputLayout.y + inputLayout.height, // change maxHeight too!
+              left: inputLayout.x + textInputLeft,
+              minWidth: dropdownWidth,
+              borderRadius: theme.roundness,
+              maxHeight:
+                windowConst.height - (inputLayout.y + inputLayout.height),
+              zIndex: 10000,
+            },
+          ]}
+        >
+          {groupBy ? (
+            <SectionListComponent<ItemT>
+              {...listProps}
+              {...innerListProps}
+              sections={sections}
+              renderSectionHeader={({ section: { title } }: any) => (
+                // @ts-ignore
+                <List.Subheader>{title}</List.Subheader>
+              )}
+            />
+          ) : (
+            <FinalListComponent<ItemT>
+              {...listProps}
+              {...innerListProps}
+              getItemLayout={getFlatListItemLayout}
+              data={data}
+            />
+          )}
+        </Popper>
+      )}
     </View>
   );
 }
@@ -682,13 +738,8 @@ function usePrevious<T>(
   return ref.current;
 }
 
-const styles = StyleSheet.create({
-  modalBackground: {
-    flex: 1,
-  },
-  menu: {
-    position: 'relative',
-  },
+const innerStyles = StyleSheet.create({
+  menu: { position: 'relative' },
   chipsWrapper: {
     flexDirection: 'row',
     position: 'absolute',
@@ -698,11 +749,19 @@ const styles = StyleSheet.create({
   },
   chip: { marginRight: 6, marginBottom: 6, flexShrink: 1 },
   surface: {
+    // @ts-ignore
     position: 'absolute',
     overflow: 'hidden',
   },
-  inputContainer: { alignItems: 'center', flexDirection: 'row' },
-  full: { flex: 1 },
+  inputContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  full: {
+    flex: 1,
+    // @ts-ignore
+    position: Platform.OS === 'web' ? 'static' : 'relative',
+  },
   arrowIconButton: {
     position: 'absolute',
     bottom: 5,

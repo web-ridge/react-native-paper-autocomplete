@@ -156,5 +156,9 @@
         }
       ]
     ]
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.10.1",
+    "react-popper": "^2.2.5"
   }
 }

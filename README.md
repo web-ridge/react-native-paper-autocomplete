@@ -88,10 +88,10 @@ function Multi() {
 
 function Multi() {
   const [options, setOptions] = React.useState([
-    { id: 1, name: 'Ruben von der Vein', gender: 'girl' },
+    { id: 1, name: 'Ruben von der Vein', gender: 'boy' },
     { id: 2, name: 'Pjotr Versjuurre', gender: 'boy' },
     { id: 3, name: 'Bjart von Klef', gender: 'boy' },
-    { id: 4, name: 'Riesjard Lindhoe', gender: 'boy' }
+    { id: 4, name: 'Riesjard Lindhoe', gender: 'girl' }
   ])
   const onEndReached = () => {
     // fetch more items (paginated) e.g:
