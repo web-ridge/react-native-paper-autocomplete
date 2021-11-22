@@ -1,11 +1,13 @@
 import { List } from 'react-native-paper';
 import * as React from 'react';
+import type { IconSource } from './icon';
 
 function AutocompleteItem<T>({
   testID,
   selected,
   title,
   description,
+  icon,
   option,
   onPress,
   highlightedColor,
@@ -14,6 +16,7 @@ function AutocompleteItem<T>({
   selected: boolean;
   title: string | number;
   description: string | number | undefined;
+  icon: IconSource | undefined;
   option: T;
   onPress: (o: T) => void;
   highlightedColor: string;
@@ -26,6 +29,11 @@ function AutocompleteItem<T>({
       accessibilityState={{
         selected,
       }}
+      left={
+        icon
+          ? (leftProps) => <List.Icon icon={icon} {...leftProps} />
+          : undefined
+      }
       title={title}
       description={description}
       style={

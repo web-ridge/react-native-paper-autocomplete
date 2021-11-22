@@ -157,7 +157,6 @@ const styles = StyleSheet.create({
     marginTop: 24,
     padding: 24,
     alignSelf: 'center',
-    flex: 1,
   },
   contentInline: {
     padding: 0,
@@ -186,23 +185,4 @@ const styles = StyleSheet.create({
   enter: { height: 12 },
   label: { width: 100, fontSize: 16 },
   row: { paddingTop: 12, paddingBottom: 12, flexDirection: 'row' },
-  customModal: {
-    top: 12,
-    left: 12,
-    right: 12,
-    bottom: 12,
-    // borderTopRightRadius: 20,
-    // borderBottomRightRadius: 20,
-    backgroundColor: '#fff',
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-
-    elevation: 5,
-  },
 });

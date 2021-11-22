@@ -32,6 +32,7 @@ import Color from 'color';
 import useLatest from './useLatest';
 import useAutomaticScroller from './useAutomaticScroller';
 import AutocompleteItem from './AutocompleteItem';
+import type { IconSource } from './icon';
 
 // https://ej2.syncfusion.com/react/documentation/drop-down-list/accessibility/
 
@@ -63,6 +64,7 @@ export interface AutocompleteBaseProps<ItemT> {
   getOptionLabel?: (option: ItemT) => string;
   getOptionDescription?: (option: ItemT) => string | number;
   getOptionValue?: (option: ItemT) => string | number;
+  getOptionIcon?: (option: ItemT) => IconSource;
   filterOptions?: (
     a: ReadonlyArray<ItemT> | null | undefined,
     {
@@ -169,6 +171,7 @@ export default function Autocomplete<ItemT>(
     getOptionLabel = (option: ItemT) =>
       (option as any).label || (option as any).name || (option as any).title,
     getOptionDescription = (option: ItemT) => (option as any).description,
+    getOptionIcon = (option: ItemT) => (option as any).icon,
     filterOptions = (a, b) => defaultFilterOptions<ItemT>(a, b),
   } = props;
   const { value: values, onChange: onChangeMultiple } =
@@ -438,6 +441,7 @@ export default function Autocomplete<ItemT>(
           highlightedColor={highlightedColor}
           title={getOptionLabel(item)}
           description={getOptionDescription(item)}
+          icon={getOptionIcon(item)}
           selected={highlightedIndex === realIndex}
           onPress={press}
           option={item}
@@ -508,6 +512,7 @@ export default function Autocomplete<ItemT>(
     return theme.colors.background;
   }, [theme, inputStyle]);
 
+  const icon = value ? getOptionIcon(value as any) : undefined;
   return (
     <View
       style={[styles.menu, style]}
@@ -525,6 +530,8 @@ export default function Autocomplete<ItemT>(
           onFocus={focus}
           blurOnSubmit={false}
           value={hasMultipleValue || inputValue.length > 0 ? ' ' : ''}
+          //@ts-ignore
+          left={icon ? <TextInput.Icon name={icon} /> : undefined}
           {...inputProps}
           style={[
             // @ts-ignore
@@ -588,6 +595,7 @@ export default function Autocomplete<ItemT>(
               key={getOptionValue(o)}
               onClose={() => remove(o)}
               style={styles.chip}
+              icon={getOptionIcon(o)}
             >
               {getOptionLabel(o)}
             </Chip>
