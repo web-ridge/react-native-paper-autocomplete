@@ -8,14 +8,12 @@ import {
   TextInput as NativeTextInput,
   LayoutChangeEvent,
   LayoutRectangle,
-  Platform,
   TextInputFocusEventData,
   NativeSyntheticEvent,
   FlatList,
   SectionList,
   useWindowDimensions,
   FlatListProps,
-  TextInputKeyPressEventData,
 } from 'react-native';
 import {
   ActivityIndicator,
@@ -33,6 +31,8 @@ import useLatest from './useLatest';
 import useAutomaticScroller from './useAutomaticScroller';
 import AutocompleteItem from './AutocompleteItem';
 import type { IconSource } from './icon';
+import useRecalculateLayout from './useRecalculateLayout';
+import useHighlighted from './useHighlighted';
 
 // https://ej2.syncfusion.com/react/documentation/drop-down-list/accessibility/
 
@@ -179,7 +179,6 @@ export default function Autocomplete<ItemT>(
   const { value: singleValue, onChange: onChangeSingle } =
     props as AutocompleteSingleProps<ItemT>;
 
-  const [highlightedIndex, setHighlightedIndex] = React.useState(0);
   const [inputLayout, setInputLayout] =
     React.useState<LayoutRectangle>(defaultLayout);
   const [chipsLayout, setChipsLayout] =
@@ -188,6 +187,13 @@ export default function Autocomplete<ItemT>(
   const inputRef = React.useRef<NativeTextInput>(null);
   const [inputValue, setInputValue] = React.useState(defaultValue || '');
   const [visible, setVisible] = React.useState(false);
+
+  // used on web to calculate layout on mount
+  useRecalculateLayout({
+    inputContainerRef,
+    inputLayout,
+    setInputLayout,
+  });
 
   const getOptionLabelRef = useLatest(getOptionLabel);
   React.useEffect(() => {
@@ -205,7 +211,7 @@ export default function Autocomplete<ItemT>(
     setInputValue(v);
     onChangeText?.(v);
   };
-  const blur = (_: any) => {
+  const blur = (_: NativeSyntheticEvent<TextInputFocusEventData>) => {
     // console.log('blur', e);
     // setVisible(false);
   };
@@ -229,42 +235,6 @@ export default function Autocomplete<ItemT>(
       y: (l as any).top || l.y,
     });
   };
-
-  const inputLayoutRef = useLatest(inputLayout);
-  const recalculateLayout = React.useCallback(() => {
-    if (Platform.OS !== 'web') {
-      return;
-    }
-
-    if (!inputContainerRef.current) {
-      return;
-    }
-
-    inputContainerRef.current.measureInWindow(
-      (x: number, y: number, width: number, height: number) => {
-        const old = inputLayoutRef.current;
-
-        if (
-          old.x !== x ||
-          old.y !== y ||
-          old.width !== width ||
-          old.height !== height
-        ) {
-          setInputLayout({
-            x,
-            y,
-            width,
-            height,
-          });
-        }
-      }
-    );
-  }, [setInputLayout, inputLayoutRef, inputContainerRef]);
-
-  // update left/top of textinput
-  React.useEffect(() => {
-    recalculateLayout();
-  });
 
   const filterOptionsRef = useLatest(filterOptions);
   const groupByRef = useLatest(groupBy);
@@ -297,6 +267,18 @@ export default function Autocomplete<ItemT>(
     ]
   );
 
+  const { highlightedIndex, handleKeyPress } = useHighlighted({
+    inputValue,
+    setInputValue,
+    data,
+    multiple,
+    values,
+    onChangeMultiple,
+    onChangeSingle,
+    inputRef,
+    setVisible,
+  });
+
   const sections = React.useMemo(() => {
     if (!groupByRef || !groupByRef.current) {
       return [];
@@ -318,60 +300,6 @@ export default function Autocomplete<ItemT>(
     }));
   }, [data, groupByRef]);
 
-  const highlightedRef = useLatest(highlightedIndex);
-  const previousData = usePrevious(data);
-  React.useEffect(() => {
-    if (previousData) {
-      const previousItem = previousData[highlightedRef.current];
-      const currentItem = data?.indexOf(previousItem);
-
-      if (currentItem && currentItem >= 0) {
-        setHighlightedIndex(currentItem);
-        return;
-      }
-    }
-
-    const exists = data?.[highlightedRef.current];
-    if (exists) {
-      return;
-    }
-    const before = data?.[highlightedRef.current - 1];
-    if (before) {
-      setHighlightedIndex((prev) => prev - 1);
-      return;
-    }
-    setHighlightedIndex(0);
-  }, [data, previousData, setHighlightedIndex, highlightedRef]);
-
-  const removeLast = React.useCallback(() => {
-    if (multiple) {
-      onChangeMultiple(
-        (values || []).filter((_, i: number) => i !== (values || []).length - 1)
-      );
-    }
-  }, [multiple, onChangeMultiple, values]);
-
-  const pressHighlighted = React.useCallback(() => {
-    if (multiple) {
-      const selectedOption = data?.[highlightedIndex];
-      if (selectedOption) {
-        onChangeMultiple([...(values || []), selectedOption]);
-      }
-      setInputValue('');
-    } else {
-      const selectedOption = data?.[highlightedIndex];
-      onChangeSingle(selectedOption);
-      inputRef.current?.blur();
-      setVisible(false);
-    }
-  }, [
-    data,
-    highlightedIndex,
-    multiple,
-    onChangeMultiple,
-    onChangeSingle,
-    values,
-  ]);
   const press = React.useCallback(
     (o: ItemT) => {
       if (multiple) {
@@ -410,9 +338,14 @@ export default function Autocomplete<ItemT>(
   const shouldEnter = chipsLayout.height > 45 || remainingSpace < dropdownWidth;
   const textInputLeft = shouldEnter ? 0 : chipsLayout.width;
   const textInputTop = shouldEnter ? chipsLayout.height + 18 : 0;
-  const highlightedColor = theme.dark
-    ? Color(theme.colors.text).alpha(0.2).rgb().string()
-    : Color(theme.colors.text).alpha(0.1).rgb().string();
+  const highlightedColor = React.useMemo(
+    () =>
+      theme.dark
+        ? Color(theme.colors.text).alpha(0.2).rgb().string()
+        : Color(theme.colors.text).alpha(0.1).rgb().string(),
+    [theme.dark, theme.colors.text]
+  );
+
   const innerListProps = {
     testID: 'autocomplete-list',
     renderItem: ({
@@ -453,49 +386,6 @@ export default function Autocomplete<ItemT>(
     ...automaticScrollProps,
   };
 
-  const keyPress = React.useCallback(
-    (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
-      if (Platform.OS !== 'web') {
-        return;
-      }
-
-      const key = e.nativeEvent.key;
-      switch (key) {
-        case 'Backspace':
-          if (inputValue === '') {
-            removeLast();
-          }
-          break;
-        case 'Enter':
-          if (data?.length === 0) {
-            return;
-          }
-          pressHighlighted();
-          break;
-        case 'ArrowDown':
-          if ((data?.length || 0) - 1 >= highlightedIndex + 1) {
-            setHighlightedIndex((prev) => prev + 1);
-          }
-          break;
-        case 'ArrowUp':
-          if (highlightedIndex >= 1) {
-            setHighlightedIndex((prev) => prev - 1);
-          }
-          break;
-        case 'Home':
-          setHighlightedIndex(0);
-          break;
-        case 'End':
-          if (data && data.length > 0) {
-            setHighlightedIndex(data?.length - 1);
-          }
-          break;
-        default:
-      }
-    },
-    [data, highlightedIndex, inputValue, pressHighlighted, removeLast]
-  );
-
   const SectionListComponent = ListComponent ? ListComponent : SectionList;
   const FinalListComponent = ListComponent ? ListComponent : FlatList;
 
@@ -512,7 +402,7 @@ export default function Autocomplete<ItemT>(
     return theme.colors.background;
   }, [theme, inputStyle]);
 
-  const icon = value ? getOptionIcon(value as any) : undefined;
+  const textInputIcon = singleValue ? getOptionIcon(singleValue) : undefined;
   return (
     <View
       style={[styles.menu, style]}
@@ -530,12 +420,17 @@ export default function Autocomplete<ItemT>(
           onFocus={focus}
           blurOnSubmit={false}
           value={hasMultipleValue || inputValue.length > 0 ? ' ' : ''}
-          //@ts-ignore
-          left={icon ? <TextInput.Icon name={icon} /> : undefined}
+          left={
+            textInputIcon ? (
+              <TextInput.Icon
+                name={textInputIcon}
+                touchSoundDisabled={undefined}
+              />
+            ) : undefined
+          }
           {...inputProps}
           style={[
-            // @ts-ignore
-            inputProps.style,
+            (inputProps as any).style,
             styles.full,
             {
               height: hasMultipleValue
@@ -545,7 +440,7 @@ export default function Autocomplete<ItemT>(
                 : undefined,
             },
           ]}
-          //@ts-ignore
+          // @ts-ignore web only props
           accessibilityHasPopup={true}
           render={(params) => {
             const { paddingTop, paddingLeft } = StyleSheet.flatten(
@@ -557,7 +452,7 @@ export default function Autocomplete<ItemT>(
                 selectTextOnFocus={true}
                 value={inputValue}
                 onChangeText={changeText}
-                onKeyPress={keyPress}
+                onKeyPress={handleKeyPress}
                 style={[
                   params.style,
                   {
@@ -569,8 +464,9 @@ export default function Autocomplete<ItemT>(
             );
           }}
         />
-        {/*// @ts-ignore*/}
         <IconButton
+          // TODO: fix RNP types bug
+          touchSoundDisabled={undefined}
           testID="autocomplete-arrow"
           style={styles.arrowIconButton}
           icon={visible ? 'menu-up' : 'menu-down'}
@@ -608,7 +504,7 @@ export default function Autocomplete<ItemT>(
           <View
             pointerEvents="box-none"
             style={[StyleSheet.absoluteFill]}
-            // @ts-ignore
+            // @ts-ignore web only prop
             accessibilityExpanded={visible}
           >
             <TouchableWithoutFeedback onPress={() => setVisible(false)}>
@@ -621,8 +517,8 @@ export default function Autocomplete<ItemT>(
               />
             </TouchableWithoutFeedback>
             {visible && (
-              // @ts-ignore
               <IconButton
+                touchSoundDisabled={undefined}
                 testID="autocomplete-close"
                 size={20}
                 icon="close"
@@ -660,8 +556,13 @@ export default function Autocomplete<ItemT>(
                   {...innerListProps}
                   sections={sections}
                   renderSectionHeader={({ section: { title } }: any) => (
-                    // @ts-ignore
-                    <List.Subheader>{title}</List.Subheader>
+                    <List.Subheader
+                      // TODO: fix RNP types bug
+                      onTextLayout={undefined}
+                      dataDetectorType={undefined}
+                    >
+                      {title}
+                    </List.Subheader>
                   )}
                 />
               ) : (
@@ -678,16 +579,6 @@ export default function Autocomplete<ItemT>(
       ) : null}
     </View>
   );
-}
-
-function usePrevious<T>(
-  value: T
-): React.MutableRefObject<T | undefined>['current'] {
-  const ref = React.useRef<T>();
-  React.useLayoutEffect(() => {
-    ref.current = value;
-  }, [value]);
-  return ref.current;
 }
 
 const styles = StyleSheet.create({
