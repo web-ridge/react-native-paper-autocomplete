@@ -2,7 +2,7 @@ import * as React from 'react';
 import Advanced from './Advanced';
 import {
   StyleSheet,
-  ScrollView,
+  // ScrollView,
   View,
   Linking,
   Image,
@@ -18,7 +18,9 @@ import {
   useTheme,
   overlay,
   Paragraph,
+  Appbar,
 } from 'react-native-paper';
+import { useAutocompleteScrollView } from '../../src';
 
 function AppInner() {
   const theme = useTheme();
@@ -26,75 +28,104 @@ function AppInner() {
     theme.dark && theme.mode === 'adaptive'
       ? overlay(3, theme.colors.surface)
       : (theme.colors.surface as any);
+  const { autoCompleteProps, scrollViewProps } = useAutocompleteScrollView();
   return (
-    <ScrollView
-      style={[
-        styles.root,
-        {
-          backgroundColor: theme.colors.background,
-        },
-      ]}
-    >
-      <View style={styles.content}>
-        <View style={styles.titleContainer}>
-          <Image source={require('./logo.png')} style={styles.logo} />
-          <Title>react-native-paper-autocomplete</Title>
-        </View>
-
-        <Paragraph>
-          The autocomplete package you wished for on all platforms (iOS,
-          Android, web) brought to you by {/*// @ts-ignore*/}
-          <Text
-            onPress={() => Linking.openURL('https://webridge.nl')}
-            style={styles.underline}
-          >
-            webRidge
-          </Text>
-        </Paragraph>
-        <Paragraph>Example version: 0.1.1</Paragraph>
-      </View>
-      <View style={styles.content}>
-        <Button
-          uppercase={false}
-          mode="contained"
-          icon="github"
-          style={styles.twitterButton}
-          onPress={() =>
-            Linking.openURL(
-              'https://github.com/web-ridge/react-native-paper-autocomplete'
-            )
-          }
-        >
-          GitHub
-        </Button>
-        <TwitterFollowButton userName={'RichardLindhout'} />
-        <TwitterFollowButton userName={'web_ridge'} />
-      </View>
-      <Animated.View
+    <>
+      <Appbar>
+        <Appbar.Content title="React Native Paper Autocomplete" />
+      </Appbar>
+      <Animated.ScrollView
+        {...scrollViewProps}
         style={[
-          styles.content,
-          styles.contentShadow,
+          styles.root,
           {
-            backgroundColor,
+            backgroundColor: theme.colors.background,
           },
         ]}
       >
-        <View>
-          <Advanced multiple={true} />
-          <Advanced multiple={false} />
-          <Advanced multiple={false} />
-          <Advanced multiple={true} />
+        <View style={styles.content}>
+          <View style={styles.titleContainer}>
+            <Image source={require('./logo.png')} style={styles.logo} />
+            <Title>react-native-paper-autocomplete</Title>
+          </View>
+
+          <Paragraph>
+            The autocomplete package you wished for on all platforms (iOS,
+            Android, web) brought to you by {/*// @ts-ignore*/}
+            <Text
+              onPress={() => Linking.openURL('https://webridge.nl')}
+              style={styles.underline}
+            >
+              webRidge
+            </Text>
+          </Paragraph>
+          <Paragraph>Example version: 0.1.1</Paragraph>
         </View>
-        <Enter />
-        <Enter />
+        <View style={styles.content}>
+          <Button
+            uppercase={false}
+            mode="contained"
+            icon="github"
+            style={styles.twitterButton}
+            onPress={() =>
+              Linking.openURL(
+                'https://github.com/web-ridge/react-native-paper-autocomplete'
+              )
+            }
+          >
+            GitHub
+          </Button>
+          <TwitterFollowButton userName={'RichardLindhout'} />
+          <TwitterFollowButton userName={'web_ridge'} />
+        </View>
+        <Animated.View
+          style={[
+            styles.content,
+            styles.contentShadow,
+            {
+              backgroundColor,
+            },
+          ]}
+        >
+          <Enter />
+          <Enter />
+          <Enter />
+          <Enter />
+          <Advanced
+            textInputMode={'flat'}
+            multiple={true}
+            autoCompleteProps={autoCompleteProps}
+          />
+          <Advanced
+            textInputMode={'flat'}
+            multiple={false}
+            autoCompleteProps={autoCompleteProps}
+          />
+          <Advanced
+            textInputMode={'flat'}
+            multiple={false}
+            autoCompleteProps={autoCompleteProps}
+          />
+          <Advanced
+            textInputMode={'outlined'}
+            multiple={false}
+            autoCompleteProps={autoCompleteProps}
+          />
+          <Advanced
+            textInputMode={'flat'}
+            multiple={true}
+            autoCompleteProps={autoCompleteProps}
+          />
 
-        <Enter />
-      </Animated.View>
+          <Enter />
+          <Enter />
 
-      <Enter />
-      <Enter />
-      <Enter />
-    </ScrollView>
+          <Enter />
+        </Animated.View>
+
+        <View style={{ height: 1500 }} />
+      </Animated.ScrollView>
+    </>
   );
 }
 
@@ -115,15 +146,15 @@ function Enter() {
 
 export default function App() {
   return (
-    <View
-      style={
-        Platform.OS === 'web' ? { flex: 1, maxHeight: '100vh' } : { flex: 1 }
-      }
-    >
-      <PaperProvider>
+    <PaperProvider>
+      <View
+        style={
+          Platform.OS === 'web' ? { flex: 1, maxHeight: '100vh' } : { flex: 1 }
+        }
+      >
         <AppInner />
-      </PaperProvider>
-    </View>
+      </View>
+    </PaperProvider>
   );
 }
 
@@ -153,7 +184,7 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   content: {
     width: '100%',
-    maxWidth: 500,
+    maxWidth: 600,
     marginTop: 24,
     padding: 24,
     alignSelf: 'center',

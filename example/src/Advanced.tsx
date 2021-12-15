@@ -1,11 +1,25 @@
 import * as React from 'react';
 import { Image } from 'react-native';
-// TODO: add example app
-// @ts-ignore
-import { Autocomplete } from 'react-native-paper-autocomplete';
 
-function Advanced({ multiple }: { multiple: boolean }) {
-  const [options] = React.useState([
+import { Autocomplete } from '../../src/index';
+
+type ItemType = {
+  id: number;
+  name: string;
+  gender: 'girl' | 'boy';
+  icon: any;
+};
+
+function Advanced({
+  textInputMode,
+  multiple,
+  autoCompleteProps,
+}: {
+  textInputMode: 'flat' | 'outlined';
+  multiple: boolean;
+  autoCompleteProps: any;
+}) {
+  const [options] = React.useState<ItemType[]>([
     {
       id: 1,
       name: 'Ruben von der Vein',
@@ -37,9 +51,7 @@ function Advanced({ multiple }: { multiple: boolean }) {
       ),
     },
   ]);
-  const [value, setValue] = React.useState(
-    multiple ? [options[0], options[1]] : options[0]
-  );
+  const [value, setValue] = React.useState(multiple ? [] : null);
   const onEndReached = () => {
     // fetch more items (paginated) e.g:
     // const response = api.fetch(...)
@@ -47,7 +59,7 @@ function Advanced({ multiple }: { multiple: boolean }) {
   };
 
   return (
-    <Autocomplete
+    <Autocomplete<ItemType>
       multiple={multiple}
       getOptionLabel={(item) => item.name}
       getOptionValue={(item) => item.id}
@@ -57,8 +69,8 @@ function Advanced({ multiple }: { multiple: boolean }) {
       options={options}
       // if you want to group on something
       groupBy={(option) => option.gender}
-      //@ts-ignore
       inputProps={{
+        mode: textInputMode,
         placeholder: 'Select user',
         // ...all other props which are available in react native paper
         onChangeText: (_) => {
@@ -72,6 +84,7 @@ function Advanced({ multiple }: { multiple: boolean }) {
         onEndReached,
         // + other FlatList props or SectionList if you specify groupBy
       }}
+      {...autoCompleteProps}
     />
   );
 }
