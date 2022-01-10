@@ -1,66 +1,96 @@
 import * as React from 'react';
-import { StyleSheet, Animated, View } from 'react-native';
-import { DarkTheme, Surface } from 'react-native-paper';
-import type { AnimatedComponentDimensions } from './useComponentDimensions';
+import { StyleSheet, Platform } from 'react-native';
+import Animated, {
+  SharedValue,
+  useAnimatedStyle,
+  useDerivedValue,
+  FadeInDown,
+} from 'react-native-reanimated';
 import usePosition from './usePosition';
+import AnimatedSurface from './AnimatedSurface';
+import type { DarkTheme } from 'react-native-paper';
 
 export default function PositionedSurface({
+  // scrollViewRef,
   inputContainerRef,
   children,
   theme,
   dropdownWidth,
-  inputContainerDimensions,
+  inputContainerHeight,
   scrollX,
   scrollY,
-  animatedScrollX,
-  animatedScrollY,
 }: {
-  scrollX: React.MutableRefObject<number>;
-  scrollY: React.MutableRefObject<number>;
-  animatedScrollX: React.MutableRefObject<Animated.Value>;
-  animatedScrollY: React.MutableRefObject<Animated.Value>;
-  inputContainerRef: React.MutableRefObject<View | null>;
+  scrollViewRef: React.RefObject<Animated.ScrollView>;
+  inputContainerRef: React.RefObject<Animated.View>;
+  scrollX: SharedValue<number>;
+  scrollY: SharedValue<number>;
+
+  dropdownWidth: SharedValue<number>;
+  inputContainerHeight: SharedValue<number>;
   children: any;
   theme: typeof DarkTheme;
-  dropdownWidth: number;
-  inputContainerDimensions: AnimatedComponentDimensions;
 }) {
-  const position = usePosition({ inputContainerRef, scrollX, scrollY });
+  console.log('positioned surface re-render');
+  const position = usePosition({
+    inputContainerRef,
+    scrollX,
+    scrollY,
+  });
+
+  const translateX = useDerivedValue(
+    () => position.value.x - scrollX.value,
+    [position, scrollX]
+  );
+
+  const translateY = useDerivedValue(
+    () => position.value.y + inputContainerHeight.value - scrollY.value,
+    [position, inputContainerHeight, scrollY]
+  );
+
+  // React.useEffect(() => {
+  //   scrollViewRef.current?.scrollTo({ x: 0, y: position.y, animated: false });
+  // }, [position.y]);
+  const isWeb = Platform.OS === 'web';
+
+  const animatedStyle = useAnimatedStyle(() => {
+    if (isWeb) {
+      return {
+        transform: [
+          {
+            translateY: translateY.value,
+          },
+          {
+            translateX: translateX.value,
+          },
+        ],
+      };
+    }
+    return {
+      // transform is buggy at least on iOS at inital re-render
+      top: translateY.value,
+      left: translateX.value,
+    };
+  }, [dropdownWidth, translateX, translateY]);
 
   return (
-    <Surface
-      style={[
-        StyleSheet.absoluteFill,
-        styles.surface,
-        {
-          transform: [
-            {
-              translateY: Animated.subtract(
-                Animated.add(position.y, inputContainerDimensions.height),
-                animatedScrollY.current
-              ),
-            },
-            {
-              translateX: Animated.subtract(
-                position.x,
-                animatedScrollX.current
-              ),
-            },
-          ],
-          // transitionProperty: 'all',
-          // transitionTimingFunction: 'linear',
-          // transitionDuration: '10ms',
-          width: dropdownWidth,
-          borderRadius: theme.roundness,
-          // TODO: add support for scroll position top/bottom
-          // maxHeight:
-          //   window.height -
-          //   (inputLayoutLazy.y + inputLayoutLazy.height),
-        },
-      ]}
+    <Animated.View
+      style={[StyleSheet.absoluteFill, styles.surface, animatedStyle]}
+      pointerEvents="box-none"
     >
-      {children}
-    </Surface>
+      <AnimatedSurface
+        entering={FadeInDown}
+        elevation={5}
+        style={[
+          {
+            width: dropdownWidth.value,
+            borderRadius: theme.roundness,
+            maxHeight: 200,
+          },
+        ]}
+      >
+        {children}
+      </AnimatedSurface>
+    </Animated.View>
   );
 }
 

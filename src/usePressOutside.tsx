@@ -8,7 +8,7 @@ export default function usePressOutside(
     () => {
       const listener = (event: any) => {
         // Do nothing if clicking ref's element or descendent elements
-        console.log({ current: ref.current, handler, event });
+        // console.log({ current: ref.current, handler, event });
         if (!ref.current || ref.current.contains(event.target)) {
           return;
         }

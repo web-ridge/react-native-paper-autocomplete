@@ -13,29 +13,27 @@ type ItemType = {
 function Advanced({
   textInputMode,
   multiple,
-  autoCompleteProps,
 }: {
   textInputMode: 'flat' | 'outlined';
   multiple: boolean;
-  autoCompleteProps: any;
 }) {
   const [options] = React.useState<ItemType[]>([
     {
       id: 1,
-      name: 'Ruben von der Vein',
+      name: 'Jannette Jansen',
       gender: 'girl',
       icon: 'emoticon',
     },
     {
       id: 2,
-      name: 'Pjotr Versjuurre',
+      name: 'Peter Lansen',
       gender: 'boy',
       icon: 'emoticon',
     },
-    { id: 3, name: 'Bjart von Klef', gender: 'boy', icon: 'emoticon' },
+    { id: 3, name: 'Rick der Laan', gender: 'boy', icon: 'emoticon' },
     {
       id: 4,
-      name: 'Riesjard Lindhoe',
+      name: 'Jan Jansen',
       gender: 'boy',
       icon: (iconProps: any) => (
         <Image
@@ -59,11 +57,13 @@ function Advanced({
   };
 
   return (
+    //@ts-ignore
     <Autocomplete<ItemType>
       multiple={multiple}
       getOptionLabel={(item) => item.name}
       getOptionValue={(item) => item.id}
       getOptionIcon={(item) => item.icon}
+      //@ts-ignore
       onChange={setValue}
       value={value}
       options={options}
@@ -84,7 +84,6 @@ function Advanced({
         onEndReached,
         // + other FlatList props or SectionList if you specify groupBy
       }}
-      {...autoCompleteProps}
     />
   );
 }

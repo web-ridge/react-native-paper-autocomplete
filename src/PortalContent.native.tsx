@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
 import { Portal } from 'react-native-paper';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 
 export default function PortalContent({
   children,

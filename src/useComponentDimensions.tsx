@@ -1,51 +1,45 @@
 import * as React from 'react';
-import { Animated, LayoutChangeEvent } from 'react-native';
-
-export type ComponentDimensions = {
-  width: number;
-  height: number;
-};
+import { SharedValue, useSharedValue } from 'react-native-reanimated';
+import type { LayoutChangeEvent } from 'react-native';
 
 export type AnimatedComponentDimensions = {
-  width: Animated.Value;
-  height: Animated.Value;
+  width: SharedValue<number>;
+  height: SharedValue<number>;
 };
 
 export default function useComponentDimensions() {
-  const animatedDimensions = React.useRef<AnimatedComponentDimensions>({
-    width: new Animated.Value(0),
-    height: new Animated.Value(0),
-  });
+  const width = useSharedValue(0);
+  const height = useSharedValue(0);
 
-  const [dimensions, setDimensions] = React.useState<ComponentDimensions>({
-    width: 0,
-    height: 0,
-  });
+  const onLayout = React.useCallback(
+    (e: LayoutChangeEvent) => {
+      const layout = e.nativeEvent.layout;
 
+      width.value = layout.width;
+      height.value = layout.height;
+      //
+      // return Animated.event(
+      //   [
+      //     {
+      //       nativeEvent: {
+      //         layout: {
+      //           width,
+      //           height,
+      //         },
+      //       },
+      //     },
+      //   ],
+      //   {
+      //     useNativeDriver: true,
+      //   }
+      // );
+    },
+    [width, height]
+  );
+  // console.log('useComponentDimensions', dimensions);
   return {
-    updateLayout: Animated.event(
-      [
-        {
-          nativeEvent: {
-            layout: {
-              width: animatedDimensions.current.width,
-              height: animatedDimensions.current.height,
-            },
-          },
-        },
-      ],
-      {
-        useNativeDriver: true,
-        listener: (event: LayoutChangeEvent) => {
-          const { layout } = event.nativeEvent;
-          setDimensions({
-            width: layout.width,
-            height: layout.height,
-          });
-        },
-      }
-    ),
-    dimensions,
-    animatedDimensions,
+    onLayout,
+    width,
+    height,
   };
 }

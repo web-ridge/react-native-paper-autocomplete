@@ -1,43 +1,54 @@
 import * as React from 'react';
-import { Animated, View } from 'react-native';
 import { useLayoutEffect } from 'react';
+import Animated, {
+  SharedValue,
+  useDerivedValue,
+  useSharedValue,
+} from 'react-native-reanimated';
 
 export default function usePosition({
   inputContainerRef,
   scrollX,
   scrollY,
 }: {
-  scrollX: React.MutableRefObject<number>;
-  scrollY: React.MutableRefObject<number>;
-  inputContainerRef: React.MutableRefObject<View | null>;
+  scrollX: SharedValue<number>;
+  scrollY: SharedValue<number>;
+  inputContainerRef: React.RefObject<Animated.View>;
 }) {
-  const position = React.useRef(
-    new Animated.ValueXY(getXYFromRef(inputContainerRef, { scrollX, scrollY }))
+  const [initial] = React.useState(
+    getXYFromRef(inputContainerRef, { scrollX, scrollY })
   );
+  const x = useSharedValue(initial.x);
+  const y = useSharedValue(initial.y);
 
   useLayoutEffect(() => {
-    position.current.setValue(
-      getXYFromRef(inputContainerRef, { scrollX, scrollY })
-    );
+    const coordinates = getXYFromRef(inputContainerRef, { scrollX, scrollY });
+    x.value = coordinates.x;
+    y.value = coordinates.y;
   });
 
-  return position.current;
+  return useDerivedValue(() => {
+    return {
+      x: x.value,
+      y: y.value,
+    };
+  }, [x, y]);
 }
 
 function getXYFromRef(
-  ref: React.MutableRefObject<View | null>,
+  ref: React.RefObject<Animated.View>,
   {
     scrollX,
     scrollY,
   }: {
-    scrollX: React.MutableRefObject<number>;
-    scrollY: React.MutableRefObject<number>;
+    scrollX: SharedValue<number>;
+    scrollY: SharedValue<number>;
   }
 ) {
   const { x, y } = getBoundingClientRect(ref.current as any);
   return {
-    x: x + scrollX.current + (window?.scrollX || 0),
-    y: y + scrollY.current + (window?.scrollY || 0),
+    x: x + scrollX.value + (window?.scrollX || 0),
+    y: y + scrollY.value + (window?.scrollY || 0),
   };
 }
 

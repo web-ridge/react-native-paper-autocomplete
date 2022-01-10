@@ -6,10 +6,9 @@ import {
   View,
   Linking,
   Image,
-  Animated,
   Platform,
 } from 'react-native';
-
+import Animated from 'react-native-reanimated';
 import {
   Title,
   Button,
@@ -20,7 +19,7 @@ import {
   Paragraph,
   Appbar,
 } from 'react-native-paper';
-import { useAutocompleteScrollView } from '../../src';
+import { AutocompleteScrollView } from '../../src';
 
 function AppInner() {
   const theme = useTheme();
@@ -28,16 +27,14 @@ function AppInner() {
     theme.dark && theme.mode === 'adaptive'
       ? overlay(3, theme.colors.surface)
       : (theme.colors.surface as any);
-  const { autoCompleteProps, scrollViewProps } = useAutocompleteScrollView();
   return (
     <>
-      <Appbar>
+      <Appbar.Header>
         <Appbar.Content title="React Native Paper Autocomplete" />
-      </Appbar>
-      <Animated.ScrollView
-        {...scrollViewProps}
+      </Appbar.Header>
+
+      <AutocompleteScrollView
         style={[
-          styles.root,
           {
             backgroundColor: theme.colors.background,
           },
@@ -48,10 +45,9 @@ function AppInner() {
             <Image source={require('./logo.png')} style={styles.logo} />
             <Title>react-native-paper-autocomplete</Title>
           </View>
-
-          <Paragraph>
+          <Paragraph selectable={true}>
             The autocomplete package you wished for on all platforms (iOS,
-            Android, web) brought to you by {/*// @ts-ignore*/}
+            Android, web) brought to you by
             <Text
               onPress={() => Linking.openURL('https://webridge.nl')}
               style={styles.underline}
@@ -59,7 +55,6 @@ function AppInner() {
               webRidge
             </Text>
           </Paragraph>
-          <Paragraph>Example version: 0.1.1</Paragraph>
         </View>
         <View style={styles.content}>
           <Button
@@ -91,31 +86,11 @@ function AppInner() {
           <Enter />
           <Enter />
           <Enter />
-          <Advanced
-            textInputMode={'flat'}
-            multiple={true}
-            autoCompleteProps={autoCompleteProps}
-          />
-          <Advanced
-            textInputMode={'flat'}
-            multiple={false}
-            autoCompleteProps={autoCompleteProps}
-          />
-          <Advanced
-            textInputMode={'flat'}
-            multiple={false}
-            autoCompleteProps={autoCompleteProps}
-          />
-          <Advanced
-            textInputMode={'outlined'}
-            multiple={false}
-            autoCompleteProps={autoCompleteProps}
-          />
-          <Advanced
-            textInputMode={'flat'}
-            multiple={true}
-            autoCompleteProps={autoCompleteProps}
-          />
+          <Advanced textInputMode={'flat'} multiple={true} />
+          <Advanced textInputMode={'flat'} multiple={false} />
+          <Advanced textInputMode={'flat'} multiple={false} />
+          <Advanced textInputMode={'outlined'} multiple={false} />
+          <Advanced textInputMode={'flat'} multiple={true} />
 
           <Enter />
           <Enter />
@@ -124,7 +99,7 @@ function AppInner() {
         </Animated.View>
 
         <View style={{ height: 1500 }} />
-      </Animated.ScrollView>
+      </AutocompleteScrollView>
     </>
   );
 }
@@ -181,13 +156,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   twitterButton: { marginBottom: 16 },
-  root: { flex: 1 },
+  // root: { flex: 1 },
   content: {
-    width: '100%',
-    maxWidth: 600,
-    marginTop: 24,
-    padding: 24,
-    alignSelf: 'center',
+    // flex: 1,
+    // maxWidth: 600,
+    marginTop: 12,
+    padding: 12,
+    // alignSelf: 'center',
   },
   contentInline: {
     padding: 0,
