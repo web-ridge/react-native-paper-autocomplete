@@ -1,27 +1,40 @@
 import * as React from 'react';
 import { Image } from 'react-native';
-// TODO: add example app
-// @ts-ignore
-import { Autocomplete } from 'react-native-paper-autocomplete';
 
-function Advanced({ multiple }: { multiple: boolean }) {
-  const [options] = React.useState([
+import { Autocomplete } from '../../src/index';
+
+type ItemType = {
+  id: number;
+  name: string;
+  gender: 'girl' | 'boy';
+  icon: any;
+};
+
+function Advanced({
+  textInputMode,
+  multiple,
+}: {
+  textInputMode: 'flat' | 'outlined';
+  multiple: boolean;
+}) {
+  const [options] = React.useState<ItemType[]>([
     {
       id: 1,
-      name: 'Ruben von der Vein',
+      name: 'Jannette Jansen',
       gender: 'girl',
       icon: 'emoticon',
     },
     {
       id: 2,
-      name: 'Pjotr Versjuurre',
+      name: 'Peter Lansen',
       gender: 'boy',
       icon: 'emoticon',
     },
-    { id: 3, name: 'Bjart von Klef', gender: 'boy', icon: 'emoticon' },
+    { id: 3, name: 'Rick der Zwaan', gender: 'boy', icon: 'emoticon' },
+    { id: 4, name: 'Billy Shilly', gender: 'boy', icon: 'emoticon' },
     {
-      id: 4,
-      name: 'Riesjard Lindhoe',
+      id: 5,
+      name: 'Jan Jansen',
       gender: 'boy',
       icon: (iconProps: any) => (
         <Image
@@ -37,9 +50,7 @@ function Advanced({ multiple }: { multiple: boolean }) {
       ),
     },
   ]);
-  const [value, setValue] = React.useState(
-    multiple ? [options[0], options[1]] : options[0]
-  );
+  const [value, setValue] = React.useState(multiple ? [] : null);
   const onEndReached = () => {
     // fetch more items (paginated) e.g:
     // const response = api.fetch(...)
@@ -47,18 +58,20 @@ function Advanced({ multiple }: { multiple: boolean }) {
   };
 
   return (
-    <Autocomplete
+    //@ts-ignore
+    <Autocomplete<ItemType>
       multiple={multiple}
       getOptionLabel={(item) => item.name}
       getOptionValue={(item) => item.id}
       getOptionIcon={(item) => item.icon}
+      //@ts-ignore
       onChange={setValue}
       value={value}
       options={options}
       // if you want to group on something
       groupBy={(option) => option.gender}
-      //@ts-ignore
       inputProps={{
+        mode: textInputMode,
         placeholder: 'Select user',
         // ...all other props which are available in react native paper
         onChangeText: (_) => {

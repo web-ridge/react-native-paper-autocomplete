@@ -22,8 +22,8 @@ function AutocompleteItem<T>({
   highlightedColor: string;
 }) {
   return (
-    // @ts-ignore
     <List.Item
+      touchSoundDisabled={undefined}
       testID={testID}
       accessibilityRole="menuitem"
       accessibilityState={{

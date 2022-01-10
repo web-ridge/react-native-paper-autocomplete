@@ -1,18 +1,15 @@
 import * as React from 'react';
 import {
   TextInputProps,
-  TouchableWithoutFeedback,
   View,
   ViewStyle,
   StyleSheet,
   TextInput as NativeTextInput,
-  LayoutChangeEvent,
-  LayoutRectangle,
   TextInputFocusEventData,
   NativeSyntheticEvent,
   FlatList,
   SectionList,
-  useWindowDimensions,
+  // useWindowDimensions,
   FlatListProps,
 } from 'react-native';
 import {
@@ -20,8 +17,6 @@ import {
   Chip,
   IconButton,
   List,
-  Portal,
-  Surface,
   TextInput,
   useTheme,
 } from 'react-native-paper';
@@ -31,8 +26,18 @@ import useLatest from './useLatest';
 import useAutomaticScroller from './useAutomaticScroller';
 import AutocompleteItem from './AutocompleteItem';
 import type { IconSource } from './icon';
-import useRecalculateLayout from './useRecalculateLayout';
 import useHighlighted from './useHighlighted';
+import PortalContent from './PortalContent';
+import useComponentDimensions from './useComponentDimensions';
+import PositionedSurface from './PositionedSurface';
+import Animated, {
+  DerivedValue,
+  SharedValue,
+  useAnimatedRef,
+  useAnimatedStyle,
+  useDerivedValue,
+} from 'react-native-reanimated';
+import { useAutocomplete } from './AutocompleteContext';
 
 // https://ej2.syncfusion.com/react/documentation/drop-down-list/accessibility/
 
@@ -50,6 +55,7 @@ export function getFlatListItemLayout(
 }
 
 export interface AutocompleteBaseProps<ItemT> {
+  testID?: string;
   loading?: boolean;
   listProps?: Omit<
     FlatListProps<ItemT>,
@@ -144,19 +150,14 @@ function removeSelected<ItemT>(
   });
 }
 
-const defaultLayout: LayoutRectangle = {
-  y: 0,
-  x: 0,
-  width: 0,
-  height: 0,
-};
-
 export default function Autocomplete<ItemT>(
   props: AutocompleteMultipleProps<ItemT> | AutocompleteSingleProps<ItemT>
 ) {
-  const window = useWindowDimensions();
+  // const window = useWindowDimensions();
   const theme = useTheme();
+  const { scrollViewRef, scrollX, scrollY } = useAutocomplete();
   const {
+    testID,
     loading,
     ListComponent,
     inputProps: { onChangeText, defaultValue, ...inputProps } = {},
@@ -179,21 +180,14 @@ export default function Autocomplete<ItemT>(
   const { value: singleValue, onChange: onChangeSingle } =
     props as AutocompleteSingleProps<ItemT>;
 
-  const [inputLayout, setInputLayout] =
-    React.useState<LayoutRectangle>(defaultLayout);
-  const [chipsLayout, setChipsLayout] =
-    React.useState<LayoutRectangle>(defaultLayout);
-  const inputContainerRef = React.useRef<View>(null);
+  const inputContainerDimensions = useComponentDimensions();
+  const chipsDimensions = useComponentDimensions();
+
+  const chipContainerRef = useAnimatedRef<Animated.View>();
+  const inputContainerRef = useAnimatedRef<Animated.View>();
   const inputRef = React.useRef<NativeTextInput>(null);
   const [inputValue, setInputValue] = React.useState(defaultValue || '');
   const [visible, setVisible] = React.useState(false);
-
-  // used on web to calculate layout on mount
-  useRecalculateLayout({
-    inputContainerRef,
-    inputLayout,
-    setInputLayout,
-  });
 
   const getOptionLabelRef = useLatest(getOptionLabel);
   React.useEffect(() => {
@@ -217,23 +211,6 @@ export default function Autocomplete<ItemT>(
   };
   const focus = (_: NativeSyntheticEvent<TextInputFocusEventData>) => {
     setVisible(true);
-  };
-  const layout = (e: LayoutChangeEvent) => {
-    const l = { ...e.nativeEvent.layout };
-    setInputLayout({
-      ...l,
-      x: (l as any).left || l.x,
-      y: (l as any).top || l.y,
-    });
-  };
-
-  const layoutChips = (e: LayoutChangeEvent) => {
-    const l = { ...e.nativeEvent.layout };
-    setChipsLayout({
-      ...l,
-      x: (l as any).left || l.x,
-      y: (l as any).top || l.y,
-    });
   };
 
   const filterOptionsRef = useLatest(filterOptions);
@@ -332,12 +309,30 @@ export default function Autocomplete<ItemT>(
     groupBy,
   });
 
-  const dropdownWidth = Math.min(inputLayout.width, 250);
-  const remainingSpace = inputLayout.width - chipsLayout.width;
+  const minimalDropdownWidth = 250;
+  const dropdownWidth = inputContainerDimensions.width;
+  const remainingSpace = useDerivedValue(
+    () => inputContainerDimensions.width.value - chipsDimensions.width.value,
+    [inputContainerDimensions.width, chipsDimensions.width]
+  );
 
-  const shouldEnter = chipsLayout.height > 45 || remainingSpace < dropdownWidth;
-  const textInputLeft = shouldEnter ? 0 : chipsLayout.width;
-  const textInputTop = shouldEnter ? chipsLayout.height + 18 : 0;
+  const shouldEnter = useDerivedValue(
+    () =>
+      chipsDimensions.height.value > 45 ||
+      remainingSpace.value < minimalDropdownWidth,
+    [chipsDimensions.height, remainingSpace]
+  );
+  const hasMultipleValue = multiple && (values || []).length > 0;
+
+  const animatedInputStyle = useAnimatedStyle(() => {
+    return {
+      height: hasMultipleValue
+        ? shouldEnter
+          ? chipsDimensions.height.value + 36 + 46
+          : chipsDimensions.height.value + 36
+        : undefined,
+    };
+  }, [chipsDimensions.height, hasMultipleValue, shouldEnter]);
   const highlightedColor = React.useMemo(
     () =>
       theme.dark
@@ -347,7 +342,10 @@ export default function Autocomplete<ItemT>(
   );
 
   const innerListProps = {
-    testID: 'autocomplete-list',
+    testID: `${testID}-autocomplete-list`,
+    keyboardDismissMode: 'on-drag',
+    keyboardShouldPersistTaps: 'handled',
+    contentInsetAdjustmentBehavior: 'always',
     renderItem: ({
       item,
       index,
@@ -369,7 +367,7 @@ export default function Autocomplete<ItemT>(
       }
       return (
         <AutocompleteItem<ItemT>
-          testID={`autocomplete-item-${key}`}
+          testID={`${testID}-autocomplete-item-${key}`}
           key={key}
           highlightedColor={highlightedColor}
           title={getOptionLabel(item)}
@@ -389,8 +387,6 @@ export default function Autocomplete<ItemT>(
   const SectionListComponent = ListComponent ? ListComponent : SectionList;
   const FinalListComponent = ListComponent ? ListComponent : FlatList;
 
-  const hasMultipleValue = multiple && (values || []).length > 0;
-
   const inputStyle = (inputProps as any)?.style;
   const backgroundColor = React.useMemo(() => {
     if (inputStyle) {
@@ -401,17 +397,23 @@ export default function Autocomplete<ItemT>(
     }
     return theme.colors.background;
   }, [theme, inputStyle]);
+  const onPressOutside = React.useCallback(() => {
+    setVisible(false);
+  }, [setVisible]);
+
+  // console.log({
+  //   visible,
+  //   inputDim: inputContainerDimensions.dimensions,
+  //   chipsDimensions,
+  //   shouldEnter,
+  // });
 
   const textInputIcon = singleValue ? getOptionIcon(singleValue) : undefined;
   return (
-    <View
-      style={[styles.menu, style]}
-      accessibilityRole="menu"
-      testID="autocomplete"
-    >
-      <View
+    <View style={[styles.menu, style]} accessibilityRole="menu" testID={testID}>
+      <Animated.View
         ref={inputContainerRef}
-        onLayout={layout}
+        onLayout={inputContainerDimensions.onLayout}
         style={styles.inputContainer}
       >
         <TextInput
@@ -421,69 +423,49 @@ export default function Autocomplete<ItemT>(
           blurOnSubmit={false}
           value={hasMultipleValue || inputValue.length > 0 ? ' ' : ''}
           left={
-            textInputIcon ? (
-              <TextInput.Icon
-                name={textInputIcon}
-                touchSoundDisabled={undefined}
-              />
-            ) : undefined
+            textInputIcon ? <TextInput.Icon name={textInputIcon} /> : undefined
           }
           {...inputProps}
-          style={[
-            (inputProps as any).style,
-            styles.full,
-            {
-              height: hasMultipleValue
-                ? shouldEnter
-                  ? chipsLayout.height + 36 + 46
-                  : chipsLayout.height + 36
-                : undefined,
-            },
-          ]}
+          style={[inputProps.style, styles.full, animatedInputStyle]}
           // @ts-ignore web only props
           accessibilityHasPopup={true}
           render={(params) => {
-            const { paddingTop, paddingLeft } = StyleSheet.flatten(
-              params.style
-            );
             return (
-              <NativeTextInput
+              <NativeTextInputWithAnimatedStyles
                 {...params}
                 selectTextOnFocus={true}
                 value={inputValue}
                 onChangeText={changeText}
                 onKeyPress={handleKeyPress}
-                style={[
-                  params.style,
-                  {
-                    paddingTop: (Number(paddingTop) || 0) + textInputTop,
-                    paddingLeft: (Number(paddingLeft) || 0) + textInputLeft,
-                  },
-                ]}
+                shouldEnter={shouldEnter}
+                chipsHeight={chipsDimensions.height}
+                chipsWidth={chipsDimensions.width}
+                multiple={multiple}
               />
             );
           }}
         />
         <IconButton
-          // TODO: fix RNP types bug
-          touchSoundDisabled={undefined}
-          testID="autocomplete-arrow"
+          testID={`${testID}-autocomplete-arrow`}
           style={styles.arrowIconButton}
           icon={visible ? 'menu-up' : 'menu-down'}
           onPress={() => {
             if (visible) {
               inputRef.current?.blur();
+              setVisible(false);
             } else {
               inputRef.current?.focus();
+              setVisible(true);
             }
           }}
         />
-      </View>
+      </Animated.View>
       {multiple && (
-        <View
-          testID="autocomplete-chips"
+        <Animated.View
+          ref={chipContainerRef}
+          testID={`${testID}-autocomplete-chips`}
           style={[styles.chipsWrapper, { backgroundColor }]}
-          onLayout={layoutChips}
+          onLayout={chipsDimensions.onLayout}
           pointerEvents="box-none"
         >
           {values?.map((o) => (
@@ -496,90 +478,93 @@ export default function Autocomplete<ItemT>(
               {getOptionLabel(o)}
             </Chip>
           ))}
-        </View>
+        </Animated.View>
       )}
       {loading ? <ActivityIndicator style={styles.loading} /> : null}
       {visible ? (
-        <Portal>
-          <View
-            pointerEvents="box-none"
-            style={[StyleSheet.absoluteFill]}
-            // @ts-ignore web only prop
-            accessibilityExpanded={visible}
+        <PortalContent visible={visible} onPressOutside={onPressOutside}>
+          <PositionedSurface
+            scrollViewRef={scrollViewRef}
+            theme={theme}
+            dropdownWidth={dropdownWidth}
+            inputContainerRef={inputContainerRef}
+            inputContainerHeight={inputContainerDimensions.height}
+            scrollX={scrollX}
+            scrollY={scrollY}
           >
-            <TouchableWithoutFeedback onPress={() => setVisible(false)}>
-              <View
-                style={[
-                  StyleSheet.absoluteFill,
-                  styles.modalBackground,
-                  // { backgroundColor: theme.colors.backdrop },
-                ]}
+            {groupBy ? (
+              <SectionListComponent<ItemT>
+                {...listProps}
+                {...innerListProps}
+                sections={sections}
+                renderSectionHeader={({ section: { title } }: any) => (
+                  <List.Subheader>{title}</List.Subheader>
+                )}
+                onScrollToIndexFailed={(info: any) => {
+                  // TODO: make sure everything uses fixed heights so this error won't be there
+                  // e.g.:  getItemLayout={getSectionListItemLayout}
+                  console.error(info);
+                }}
               />
-            </TouchableWithoutFeedback>
-            {visible && (
-              <IconButton
-                touchSoundDisabled={undefined}
-                testID="autocomplete-close"
-                size={20}
-                icon="close"
-                style={{
-                  top: inputLayout.y + (inputLayout.height - 30) / 2, // change maxHeight too!
-                  left: inputLayout.x + inputLayout.width - 36 - 36 - 16,
-                }}
-                onPress={() => {
-                  setVisible(false);
-                  setInputValue('');
-                  if (multiple) {
-                    onChangeMultiple([]);
-                  } else {
-                    onChangeSingle(undefined);
-                  }
-                }}
+            ) : (
+              <FinalListComponent<ItemT>
+                {...listProps}
+                {...innerListProps}
+                getItemLayout={getFlatListItemLayout}
+                data={data}
               />
             )}
-            <Surface
-              style={[
-                styles.surface,
-                {
-                  top: inputLayout.y + inputLayout.height, // change maxHeight too!
-                  left: inputLayout.x + textInputLeft,
-                  minWidth: dropdownWidth,
-                  borderRadius: theme.roundness,
-                  maxHeight:
-                    window.height - (inputLayout.y + inputLayout.height),
-                },
-              ]}
-            >
-              {groupBy ? (
-                <SectionListComponent<ItemT>
-                  {...listProps}
-                  {...innerListProps}
-                  sections={sections}
-                  renderSectionHeader={({ section: { title } }: any) => (
-                    <List.Subheader
-                      // TODO: fix RNP types bug
-                      onTextLayout={undefined}
-                      dataDetectorType={undefined}
-                    >
-                      {title}
-                    </List.Subheader>
-                  )}
-                />
-              ) : (
-                <FinalListComponent<ItemT>
-                  {...listProps}
-                  {...innerListProps}
-                  getItemLayout={getFlatListItemLayout}
-                  data={data}
-                />
-              )}
-            </Surface>
-          </View>
-        </Portal>
+          </PositionedSurface>
+        </PortalContent>
       ) : null}
     </View>
   );
 }
+
+const AnimatedNativeInput = Animated.createAnimatedComponent(NativeTextInput);
+const NativeTextInputWithAnimatedStyles = React.forwardRef(
+  (
+    {
+      shouldEnter,
+      chipsHeight,
+      chipsWidth,
+      style,
+      multiple,
+      ...rest
+    }: TextInputProps & {
+      multiple: boolean | undefined;
+      shouldEnter: DerivedValue<boolean>;
+      chipsHeight: SharedValue<number>;
+      chipsWidth: SharedValue<number>;
+    },
+    forwardedRef: any
+  ) => {
+    const originalStyle = StyleSheet.flatten(style);
+
+    const orgTop = Number(originalStyle.paddingTop) || 0;
+    const orgLeft = Number(originalStyle.paddingLeft) || 0;
+    const height = Number(originalStyle.height) || 0;
+    const animatedStyle = useAnimatedStyle(() => {
+      if (!multiple) {
+        return {};
+      }
+      const addTop = shouldEnter.value ? chipsHeight.value + 18 : 18;
+      return {
+        paddingTop: orgTop + addTop,
+        paddingLeft: orgLeft + (shouldEnter.value ? 0 : chipsWidth.value),
+        height: height + addTop,
+      };
+    }, [multiple, orgLeft, orgTop, shouldEnter, chipsHeight, chipsWidth]);
+
+    return (
+      <AnimatedNativeInput
+        ref={forwardedRef}
+        {...rest}
+        style={[style, animatedStyle]}
+      />
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   modalBackground: {
@@ -596,10 +581,7 @@ const styles = StyleSheet.create({
     left: 12,
   },
   chip: { marginRight: 6, marginBottom: 6, flexShrink: 1 },
-  surface: {
-    position: 'absolute',
-    overflow: 'hidden',
-  },
+
   inputContainer: { alignItems: 'center', flexDirection: 'row' },
   full: { flex: 1 },
   arrowIconButton: {

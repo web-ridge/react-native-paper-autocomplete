@@ -2,14 +2,14 @@ import * as React from 'react';
 import type { FlatList, SectionList } from 'react-native';
 import useLatest from './useLatest';
 
-export default function useAutomaticScroller({
+export default function useAutomaticScroller<ItemT>({
   highlightedIndex,
   sections,
   groupBy,
 }: {
   highlightedIndex: number;
-  sections: any[];
-  groupBy: any;
+  sections: { title: string; data: ItemT[] }[];
+  groupBy?: (option: ItemT) => string;
 }) {
   const viewableItems = React.useRef<any[]>([]);
   const isSectionList = !!groupBy;
