@@ -20,11 +20,12 @@
 
 
 Great autocomplete package for React Native Paper with great web support.
-
+- Uses re-animated to be smooth on iOS/Android/Web
 - Keyboard support (Arrow down/up/end/start)
 - Single + multiple
 - Async connect with backend
 - Grouped results
+- Great web support (scrollable while open)
 
 ## Installation
 
@@ -48,34 +49,38 @@ const options = [
 ]
 function Single() {
   return (
-    <Autocomplete
-      onChange={(newValue)=>{
-        console.log({ newValue })
-      }}
-      value={options[0]}
-      options={options}
-      inputProps={{
-        placeholder: 'Select user',
-        // ...all other props which are available in react native paper
-      }}
-    />
+    <AutocompleteScrollView>
+      <Autocomplete
+        onChange={(newValue)=>{
+          console.log({ newValue })
+        }}
+        value={options[0]}
+        options={options}
+        inputProps={{
+          placeholder: 'Select user',
+          // ...all other props which are available in react native paper
+        }}
+      />
+  </AutocompleteScrollView>
   )
 }
 
 function Multi() {
   return (
-    <Autocomplete
-      multiple={true}
-      onChange={(newValue)=>{
-        console.log({ newValue })
-      }}
-      value={[options[0], options[1]]}
-      options={options}
-      inputProps={{
-        placeholder: 'Select user',
-        // ...all other props which are available in react native paper
-      }}
-    />
+    <AutocompleteScrollView>
+      <Autocomplete
+        multiple={true}
+        onChange={(newValue)=>{
+          console.log({ newValue })
+        }}
+        value={[options[0], options[1]]}
+        options={options}
+        inputProps={{
+          placeholder: 'Select user',
+          // ...all other props which are available in react native paper
+        }}
+      />
+    </AutocompleteScrollView>
   )
 }
 ```
@@ -100,30 +105,32 @@ function Multi() {
   }
 
   return (
-    <Autocomplete
-      multiple={true}
-      getOptionLabel={(item) => item.name}
-      getOptionValue={(item) => item.id}
-      onChange={(newValue)=>{
-        console.log({ newValue })
-      }}
-      value={[options[0], options[1]]}
-      options={options}
-      // if you want to group on something
-      groupBy={(option) => option.gender}
-      inputProps={{
-        placeholder: 'Select user',
-        // ...all other props which are available in react native paper
-        onChangeText: (search) => {
-         // Load from your backend
-        },
-      }}
+    <AutocompleteScrollView>
+      <Autocomplete
+        multiple={true}
+        getOptionLabel={(item) => item.name}
+        getOptionValue={(item) => item.id}
+        onChange={(newValue)=>{
+          console.log({ newValue })
+        }}
+        value={[options[0], options[1]]}
+        options={options}
+        // if you want to group on something
+        groupBy={(option) => option.gender}
+        inputProps={{
+          placeholder: 'Select user',
+          // ...all other props which are available in react native paper
+          onChangeText: (search) => {
+           // Load from your backend
+          },
+        }}
 
-      listProps={{
-          onEndReached
-            // + other FlatList props or SectionList if you specify groupBy
-      }}
-    />
+        listProps={{
+            onEndReached
+              // + other FlatList props or SectionList if you specify groupBy
+        }}
+      />
+    </AutocompleteScrollView>
   )
 }
 ```

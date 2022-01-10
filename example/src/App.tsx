@@ -32,7 +32,6 @@ function AppInner() {
       <Appbar.Header>
         <Appbar.Content title="React Native Paper Autocomplete" />
       </Appbar.Header>
-
       <AutocompleteScrollView
         style={[
           {

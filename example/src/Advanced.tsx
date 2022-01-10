@@ -30,9 +30,10 @@ function Advanced({
       gender: 'boy',
       icon: 'emoticon',
     },
-    { id: 3, name: 'Rick der Laan', gender: 'boy', icon: 'emoticon' },
+    { id: 3, name: 'Rick der Zwaan', gender: 'boy', icon: 'emoticon' },
+    { id: 4, name: 'Billy Shilly', gender: 'boy', icon: 'emoticon' },
     {
-      id: 4,
+      id: 5,
       name: 'Jan Jansen',
       gender: 'boy',
       icon: (iconProps: any) => (

@@ -409,7 +409,6 @@ export default function Autocomplete<ItemT>(
   // });
 
   const textInputIcon = singleValue ? getOptionIcon(singleValue) : undefined;
-  console.log('autocomplete', { visible });
   return (
     <View style={[styles.menu, style]} accessibilityRole="menu" testID={testID}>
       <Animated.View
@@ -549,7 +548,7 @@ const NativeTextInputWithAnimatedStyles = React.forwardRef(
       if (!multiple) {
         return {};
       }
-      const addTop = shouldEnter.value ? chipsHeight.value + 18 : 0;
+      const addTop = shouldEnter.value ? chipsHeight.value + 18 : 18;
       return {
         paddingTop: orgTop + addTop,
         paddingLeft: orgLeft + (shouldEnter.value ? 0 : chipsWidth.value),

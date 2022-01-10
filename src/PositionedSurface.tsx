@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, Platform } from 'react-native';
+import { StyleSheet, Platform, useWindowDimensions } from 'react-native';
 import Animated, {
   SharedValue,
   useAnimatedStyle,
@@ -9,9 +9,12 @@ import Animated, {
 import usePosition from './usePosition';
 import AnimatedSurface from './AnimatedSurface';
 import type { DarkTheme } from 'react-native-paper';
+import useKeyboardHeight from './useKeyboardHeight';
+
+const SCROLLING_PADDING = 120;
 
 export default function PositionedSurface({
-  // scrollViewRef,
+  scrollViewRef,
   inputContainerRef,
   children,
   theme,
@@ -30,7 +33,8 @@ export default function PositionedSurface({
   children: any;
   theme: typeof DarkTheme;
 }) {
-  console.log('positioned surface re-render');
+  const dimensions = useWindowDimensions();
+  const keyboardHeight = useKeyboardHeight(dimensions);
   const position = usePosition({
     inputContainerRef,
     scrollX,
@@ -46,11 +50,25 @@ export default function PositionedSurface({
     () => position.value.y + inputContainerHeight.value - scrollY.value,
     [position, inputContainerHeight, scrollY]
   );
-
-  // React.useEffect(() => {
-  //   scrollViewRef.current?.scrollTo({ x: 0, y: position.y, animated: false });
-  // }, [position.y]);
   const isWeb = Platform.OS === 'web';
+
+  React.useLayoutEffect(() => {
+    if (isWeb) {
+      return;
+    }
+
+    const timerId = setTimeout(() => {
+      if (scrollViewRef.current) {
+        //@ts-ignore
+        scrollViewRef.current.scrollTo({
+          x: position.value.x, // - TODO: inputContainer.width?
+          y: position.value.y - SCROLLING_PADDING,
+          animated: true,
+        });
+      }
+    }, 100);
+    return () => clearTimeout(timerId);
+  }, [position.value, isWeb, scrollViewRef]);
 
   const animatedStyle = useAnimatedStyle(() => {
     if (isWeb) {
@@ -71,6 +89,12 @@ export default function PositionedSurface({
       left: translateX.value,
     };
   }, [dropdownWidth, translateX, translateY]);
+  const animatedSurfaceStyle = useAnimatedStyle(() => {
+    return {
+      maxHeight:
+        dimensions.height - keyboardHeight.value - SCROLLING_PADDING * 2,
+    };
+  }, [dimensions.height - keyboardHeight.value]);
 
   return (
     <Animated.View
@@ -81,10 +105,10 @@ export default function PositionedSurface({
         entering={FadeInDown}
         elevation={5}
         style={[
+          animatedSurfaceStyle,
           {
             width: dropdownWidth.value,
             borderRadius: theme.roundness,
-            maxHeight: 200,
           },
         ]}
       >
