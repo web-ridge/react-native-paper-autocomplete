@@ -1,16 +1,17 @@
 import Animated from 'react-native-reanimated';
 import { AutocompleteContext } from './AutocompleteContext';
-import type { ScrollViewProps } from 'react-native';
+import type { FlatListProps } from 'react-native';
 import * as React from 'react';
 import { useScrollableProps } from './shared';
 
-function AutocompleteScrollView(rest: ScrollViewProps) {
+function AutocompleteFlatList<T>(rest: FlatListProps<T>) {
   const { scrollableRef, scrollX, scrollY, scrollableProps } =
     useScrollableProps();
+  const Flat = Animated.FlatList as any;
   return (
     <AutocompleteContext.Provider value={{ scrollableRef, scrollX, scrollY }}>
-      <Animated.ScrollView {...rest} {...scrollableProps} />
+      <Flat {...rest} {...scrollableProps} />
     </AutocompleteContext.Provider>
   );
 }
-export default AutocompleteScrollView;
+export default AutocompleteFlatList;

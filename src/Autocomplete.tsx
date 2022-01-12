@@ -155,7 +155,7 @@ export default function Autocomplete<ItemT>(
 ) {
   // const window = useWindowDimensions();
   const theme = useTheme();
-  const { scrollViewRef, scrollX, scrollY } = useAutocomplete();
+  const { scrollableRef, scrollX, scrollY } = useAutocomplete();
   const {
     testID,
     loading,
@@ -484,7 +484,7 @@ export default function Autocomplete<ItemT>(
       {visible ? (
         <PortalContent visible={visible} onPressOutside={onPressOutside}>
           <PositionedSurface
-            scrollViewRef={scrollViewRef}
+            scrollableRef={scrollableRef}
             theme={theme}
             dropdownWidth={dropdownWidth}
             inputContainerRef={inputContainerRef}

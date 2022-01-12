@@ -135,6 +135,24 @@ function Multi() {
 }
 ```
 
+
+## Custom scrollable containers
+* If your autocomplete is inside a `ScrollView` use `AutocompleteScrollView` instead of the native ScrollView
+* If your autocomplete is inside a `FlatList` use `AutocompleteFlatList` instead of the native FlatList
+
+* If you're using another scrollable component, make sure it has te same api as the scrollView and supports the
+following properties: `ref, scrollEventThrottle, keyboardShouldPersistTaps, onScroll`
+
+### Example of custom scrollable container with autocomplete support
+
+```tsx
+import CustomScrollView from '../CustomScrollView'
+import { createAutocompleteScrollable } from 'react-native-paper-autocomplete'
+const AnimatedCustomScrollView = createAutocompleteScrollable(CustomScrollView)
+```
+
+
+
 ## Contributing
 
 See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.

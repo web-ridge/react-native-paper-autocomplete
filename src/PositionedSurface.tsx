@@ -1,5 +1,10 @@
 import * as React from 'react';
-import { StyleSheet, Platform, useWindowDimensions } from 'react-native';
+import {
+  StyleSheet,
+  Platform,
+  useWindowDimensions,
+  ScrollView,
+} from 'react-native';
 import Animated, {
   SharedValue,
   useAnimatedStyle,
@@ -14,7 +19,7 @@ import useKeyboardHeight from './useKeyboardHeight';
 const SCROLLING_PADDING = 120;
 
 export default function PositionedSurface({
-  scrollViewRef,
+  scrollableRef,
   inputContainerRef,
   children,
   theme,
@@ -23,7 +28,7 @@ export default function PositionedSurface({
   scrollX,
   scrollY,
 }: {
-  scrollViewRef: React.RefObject<Animated.ScrollView>;
+  scrollableRef: React.RefObject<Animated.ScrollView | Animated.FlatList>;
   inputContainerRef: React.RefObject<Animated.View>;
   scrollX: SharedValue<number>;
   scrollY: SharedValue<number>;
@@ -58,9 +63,8 @@ export default function PositionedSurface({
     }
 
     const timerId = setTimeout(() => {
-      if (scrollViewRef.current) {
-        //@ts-ignore
-        scrollViewRef.current.scrollTo({
+      if (scrollableRef.current) {
+        (scrollableRef.current as any as ScrollView).scrollTo({
           x: position.value.x, // - TODO: inputContainer.width?
           y: position.value.y - SCROLLING_PADDING,
           animated: true,
@@ -68,7 +72,7 @@ export default function PositionedSurface({
       }
     }, 100);
     return () => clearTimeout(timerId);
-  }, [position.value, isWeb, scrollViewRef]);
+  }, [position.value, isWeb, scrollableRef]);
 
   const animatedStyle = useAnimatedStyle(() => {
     if (isWeb) {
