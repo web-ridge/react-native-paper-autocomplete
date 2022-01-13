@@ -32,7 +32,6 @@ export default function PositionedSurface({
   inputContainerRef: React.RefObject<Animated.View>;
   scrollX: SharedValue<number>;
   scrollY: SharedValue<number>;
-
   dropdownWidth: SharedValue<number>;
   inputContainerHeight: SharedValue<number>;
   children: any;
@@ -63,13 +62,17 @@ export default function PositionedSurface({
     }
 
     const timerId = setTimeout(() => {
-      if (scrollableRef.current) {
-        (scrollableRef.current as any as ScrollView).scrollTo({
-          x: position.value.x, // - TODO: inputContainer.width?
-          y: position.value.y - SCROLLING_PADDING,
-          animated: true,
-        });
+      const scrollable = scrollableRef.current as any as ScrollView;
+      if (!scrollable?.scrollTo) {
+        console.debug(
+          '[react-native-paper-autocomplete] no scrollview to scroll in'
+        );
       }
+      scrollable?.scrollTo?.({
+        x: position.value.x, // - TODO: inputContainer.width?
+        y: position.value.y - SCROLLING_PADDING,
+        animated: true,
+      });
     }, 100);
     return () => clearTimeout(timerId);
   }, [position.value, isWeb, scrollableRef]);

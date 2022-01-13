@@ -445,6 +445,23 @@ export default function Autocomplete<ItemT>(
             );
           }}
         />
+        {(multiple && visible) || (!multiple && value) ? (
+          <IconButton
+            testID="autocomplete-close"
+            size={20}
+            icon="close"
+            style={styles.closeButton}
+            onPress={() => {
+              setVisible(false);
+              setInputValue('');
+              if (multiple) {
+                onChangeMultiple([]);
+              } else {
+                onChangeSingle(undefined);
+              }
+            }}
+          />
+        ) : null}
         <IconButton
           testID={`${testID}-autocomplete-arrow`}
           style={styles.arrowIconButton}
@@ -584,6 +601,11 @@ const styles = StyleSheet.create({
 
   inputContainer: { alignItems: 'center', flexDirection: 'row' },
   full: { flex: 1 },
+  closeButton: {
+    position: 'absolute',
+    bottom: 6,
+    right: 36,
+  },
   arrowIconButton: {
     position: 'absolute',
     bottom: 5,

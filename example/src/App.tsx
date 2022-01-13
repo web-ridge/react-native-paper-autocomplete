@@ -157,11 +157,11 @@ const styles = StyleSheet.create({
   twitterButton: { marginBottom: 16 },
   // root: { flex: 1 },
   content: {
-    // flex: 1,
-    // maxWidth: 600,
+    width: '100%',
+    maxWidth: 600,
     marginTop: 12,
     padding: 12,
-    // alignSelf: 'center',
+    alignSelf: 'center',
   },
   contentInline: {
     padding: 0,
