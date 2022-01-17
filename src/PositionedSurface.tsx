@@ -9,7 +9,7 @@ import Animated, {
   SharedValue,
   useAnimatedStyle,
   useDerivedValue,
-  FadeInDown,
+  // FadeInDown,
 } from 'react-native-reanimated';
 import usePosition from './usePosition';
 import AnimatedSurface from './AnimatedSurface';
@@ -65,7 +65,7 @@ export default function PositionedSurface({
       const scrollable = scrollableRef.current as any as ScrollView;
       if (!scrollable?.scrollTo) {
         console.debug(
-          '[react-native-paper-autocomplete] no scrollview to scroll in'
+          '[react-native-paper-autocomplete] no scrollView to scroll in'
         );
       }
       scrollable?.scrollTo?.({
@@ -109,7 +109,7 @@ export default function PositionedSurface({
       pointerEvents="box-none"
     >
       <AnimatedSurface
-        entering={FadeInDown}
+        // entering={FadeInDown}
         elevation={5}
         style={[
           animatedSurfaceStyle,
