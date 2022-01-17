@@ -54,6 +54,8 @@ export function getFlatListItemLayout(
   };
 }
 
+// const AnimatedTextInput = createElement(TextInput);
+
 export interface AutocompleteBaseProps<ItemT> {
   testID?: string;
   loading?: boolean;
@@ -324,15 +326,15 @@ export default function Autocomplete<ItemT>(
   );
   const hasMultipleValue = multiple && (values || []).length > 0;
 
-  const animatedInputStyle = useAnimatedStyle(() => {
-    return {
-      height: hasMultipleValue
-        ? shouldEnter
-          ? chipsDimensions.height.value + 36 + 46
-          : chipsDimensions.height.value + 36
-        : undefined,
-    };
-  }, [chipsDimensions.height, hasMultipleValue, shouldEnter]);
+  // const animatedInputStyle = useAnimatedStyle(() => {
+  //   return {
+  //     height: hasMultipleValue
+  //       ? shouldEnter
+  //         ? chipsDimensions.height.value + 36 + 46
+  //         : chipsDimensions.height.value + 36
+  //       : undefined,
+  //   };
+  // }, [chipsDimensions.height, hasMultipleValue, shouldEnter]);
   const highlightedColor = React.useMemo(
     () =>
       theme.dark
@@ -426,7 +428,7 @@ export default function Autocomplete<ItemT>(
             textInputIcon ? <TextInput.Icon name={textInputIcon} /> : undefined
           }
           {...inputProps}
-          style={[inputProps.style, styles.full, animatedInputStyle]}
+          style={[inputProps.style, styles.full]}
           // @ts-ignore web only props
           accessibilityHasPopup={true}
           render={(params) => {
@@ -566,6 +568,7 @@ const NativeTextInputWithAnimatedStyles = React.forwardRef(
         return {};
       }
       const addTop = shouldEnter.value ? chipsHeight.value + 18 : 18;
+
       return {
         paddingTop: orgTop + addTop,
         paddingLeft: orgLeft + (shouldEnter.value ? 0 : chipsWidth.value),
