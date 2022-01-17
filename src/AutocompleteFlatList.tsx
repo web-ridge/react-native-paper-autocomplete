@@ -14,4 +14,5 @@ function AutocompleteFlatList<T>(rest: FlatListProps<T>) {
     </AutocompleteContext.Provider>
   );
 }
+
 export default AutocompleteFlatList;
