@@ -22,7 +22,7 @@ export function useAutocomplete() {
   const zero = useSharedValue(0);
   const fallbackValues = React.useMemo(() => {
     const fb: AutocompleteContextType = {
-      scrollableRef: React.createRef<Animated.ScrollView>(),
+      scrollableRef: { current: null },
       scrollX: zero,
       scrollY: zero,
     };
