@@ -71,6 +71,7 @@ function Advanced({
       // if you want to group on something
       groupBy={(option) => option.gender}
       inputProps={{
+        // dense: true, // TODO: fix multiple height with chips!
         mode: textInputMode,
         placeholder: 'Select user',
         // ...all other props which are available in react native paper

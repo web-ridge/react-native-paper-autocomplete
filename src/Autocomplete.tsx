@@ -55,6 +55,12 @@ export function getFlatListItemLayout(
 }
 
 // const AnimatedTextInput = createElement(TextInput);
+export interface FilterOptionsParams<ItemT> {
+  isFocusedAndValueIsSameAsSearch: boolean;
+  inputValue: string;
+  getOptionLabel: (option: ItemT) => string;
+  getOptionDescription?: (option: ItemT) => string;
+}
 
 export interface AutocompleteBaseProps<ItemT> {
   testID?: string;
@@ -76,14 +82,11 @@ export interface AutocompleteBaseProps<ItemT> {
   filterOptions?: (
     a: ReadonlyArray<ItemT> | null | undefined,
     {
+      isFocusedAndValueIsSameAsSearch,
       inputValue,
       getOptionLabel,
       getOptionDescription,
-    }: {
-      inputValue: string;
-      getOptionLabel: (option: ItemT) => string;
-      getOptionDescription?: (option: ItemT) => string;
-    }
+    }: FilterOptionsParams<ItemT>
   ) => ReadonlyArray<ItemT> | null | undefined;
 }
 
@@ -104,15 +107,15 @@ export interface AutocompleteSingleProps<ItemT>
 export function defaultFilterOptions<ItemT>(
   a: ReadonlyArray<ItemT> | null | undefined,
   {
+    isFocusedAndValueIsSameAsSearch,
     inputValue,
     getOptionLabel,
     getOptionDescription,
-  }: {
-    inputValue: string;
-    getOptionLabel: (option: ItemT) => string;
-    getOptionDescription?: (option: ItemT) => string;
-  }
+  }: FilterOptionsParams<ItemT>
 ) {
+  if (isFocusedAndValueIsSameAsSearch) {
+    return a;
+  }
   return a?.filter((o) => {
     const oAny = o as any;
     if (!inputValue) {
@@ -140,7 +143,6 @@ function removeSelected<ItemT>(
     getOptionValue: (option: ItemT) => string | number;
   }
 ) {
-  // console.log({ value });
   return a?.filter((o) => {
     let selected = multiple
       ? (rValue as ItemT[])?.some(
@@ -190,6 +192,7 @@ export default function Autocomplete<ItemT>(
   const inputRef = React.useRef<NativeTextInput>(null);
   const [inputValue, setInputValue] = React.useState(defaultValue || '');
   const [visible, setVisible] = React.useState(false);
+  const [focused, setFocused] = React.useState(false);
 
   const getOptionLabelRef = useLatest(getOptionLabel);
   React.useEffect(() => {
@@ -210,15 +213,29 @@ export default function Autocomplete<ItemT>(
   const blur = (_: NativeSyntheticEvent<TextInputFocusEventData>) => {
     // console.log('blur', e);
     // setVisible(false);
+    setFocused(false);
   };
   const focus = (_: NativeSyntheticEvent<TextInputFocusEventData>) => {
     setVisible(true);
+    setFocused(true);
   };
 
   const filterOptionsRef = useLatest(filterOptions);
   const groupByRef = useLatest(groupBy);
   const getOptionValueRef = useLatest(getOptionValue);
   const getOptionDescriptionRef = useLatest(getOptionDescription);
+
+  const isFocusedAndValueIsSameAsSearch =
+    (singleValue && focused && inputValue === getOptionLabel(singleValue)) ||
+    false;
+
+  console.log({
+    singleValue,
+    focused,
+    inputValue,
+    inputValueCompareTo: singleValue && getOptionLabel(singleValue),
+    isFocusedAndValueIsSameAsSearch,
+  });
 
   const data = React.useMemo(
     () =>
@@ -229,12 +246,14 @@ export default function Autocomplete<ItemT>(
           getOptionValue: getOptionValueRef.current,
         }),
         {
+          isFocusedAndValueIsSameAsSearch,
           getOptionLabel: getOptionLabelRef.current,
           getOptionDescription: getOptionDescriptionRef.current,
           inputValue,
         }
       ),
     [
+      isFocusedAndValueIsSameAsSearch,
       filterOptionsRef,
       inputValue,
       value,
