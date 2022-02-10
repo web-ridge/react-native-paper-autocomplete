@@ -1,10 +1,9 @@
-export {
-  default as Autocomplete,
+export { default as Autocomplete, defaultFilterOptions } from './Autocomplete';
+export type {
   FilterOptionsParams,
   AutocompleteBaseProps,
   AutocompleteMultipleProps,
   AutocompleteSingleProps,
-  defaultFilterOptions,
 } from './Autocomplete';
 export { default as AutocompleteScrollView } from './AutocompleteScrollView';
 export { default as AutocompleteFlatList } from './AutocompleteFlatList';
