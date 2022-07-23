@@ -36,7 +36,7 @@ export function useScrollableProps({ onScroll }: ScrollViewProps, ref: any) {
 
     if (onScroll) {
       // https://github.com/software-mansion/react-native-reanimated/issues/2426
-      runOnJS(onScroll)(e as any);
+      runOnJS(onScroll)({ nativeEvent: e } as any);
     }
   });
   const scrollableProps: AutocompleteScrollableProps = {
