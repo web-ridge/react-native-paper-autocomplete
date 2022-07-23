@@ -10,6 +10,7 @@ import type {
   ScrollViewProps,
 } from 'react-native';
 import { mergeRefs } from './mergeRefs';
+import { Platform } from 'react-native';
 
 export type AutocompleteScrollableProps = {
   ref?: any;
@@ -36,7 +37,11 @@ export function useScrollableProps({ onScroll }: ScrollViewProps, ref: any) {
 
     if (onScroll) {
       // https://github.com/software-mansion/react-native-reanimated/issues/2426
-      runOnJS(onScroll)({ nativeEvent: e } as any);
+      if (Platform.OS === 'web') {
+        onScroll({ nativeEvent: e } as any);
+      } else {
+        runOnJS(onScroll)({ nativeEvent: e } as any);
+      }
     }
   });
   const scrollableProps: AutocompleteScrollableProps = {
