@@ -3,7 +3,11 @@ import {
   useAnimatedScrollHandler,
   useSharedValue,
 } from 'react-native-reanimated';
-import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
+import type {
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollViewProps,
+} from 'react-native';
 
 export type AutocompleteScrollableProps = {
   ref?: any;
@@ -19,7 +23,7 @@ export type AutocompleteScrollableProps = {
     | undefined;
 };
 
-export function useScrollableProps() {
+export function useScrollableProps(props: ScrollViewProps) {
   const scrollableRef = useAnimatedRef<any>();
   const scrollX = useSharedValue(0);
   const scrollY = useSharedValue(0);
@@ -27,6 +31,7 @@ export function useScrollableProps() {
     const { x, y } = e.contentOffset;
     scrollX.value = x;
     scrollY.value = y;
+    props?.onScroll?.(e as any);
   });
   const scrollableProps: AutocompleteScrollableProps = {
     ref: scrollableRef,

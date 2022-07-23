@@ -6,7 +6,7 @@ import { useScrollableProps } from './shared';
 
 function AutocompleteScrollView(rest: ScrollViewProps, ref: any) {
   const { scrollableRef, scrollX, scrollY, scrollableProps } =
-    useScrollableProps();
+    useScrollableProps(rest);
   return (
     <AutocompleteContext.Provider value={{ scrollableRef, scrollX, scrollY }}>
       <Animated.ScrollView ref={ref} {...rest} {...scrollableProps} />

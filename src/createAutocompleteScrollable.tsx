@@ -7,7 +7,7 @@ export default function createAutocompleteScrollable<
 >(WrappedComponent: T): React.ComponentType<T> {
   return React.forwardRef(function (rest, ref) {
     const { scrollableRef, scrollX, scrollY, scrollableProps } =
-      useScrollableProps();
+      useScrollableProps(rest);
     const WW = WrappedComponent as any;
     return (
       <AutocompleteContext.Provider value={{ scrollableRef, scrollX, scrollY }}>
