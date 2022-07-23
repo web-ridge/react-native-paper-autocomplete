@@ -4,13 +4,13 @@ import type { ScrollViewProps } from 'react-native';
 import * as React from 'react';
 import { useScrollableProps } from './shared';
 
-function AutocompleteScrollView(rest: ScrollViewProps) {
+function AutocompleteScrollView(rest: ScrollViewProps, ref: any) {
   const { scrollableRef, scrollX, scrollY, scrollableProps } =
     useScrollableProps();
   return (
     <AutocompleteContext.Provider value={{ scrollableRef, scrollX, scrollY }}>
-      <Animated.ScrollView {...rest} {...scrollableProps} />
+      <Animated.ScrollView ref={ref} {...rest} {...scrollableProps} />
     </AutocompleteContext.Provider>
   );
 }
-export default AutocompleteScrollView;
+export default React.forwardRef(AutocompleteScrollView);

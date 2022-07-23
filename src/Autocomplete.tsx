@@ -229,13 +229,13 @@ export default function Autocomplete<ItemT>(
     (singleValue && focused && inputValue === getOptionLabel(singleValue)) ||
     false;
 
-  console.log({
-    singleValue,
-    focused,
-    inputValue,
-    inputValueCompareTo: singleValue && getOptionLabel(singleValue),
-    isFocusedAndValueIsSameAsSearch,
-  });
+  // console.log({
+  //   singleValue,
+  //   focused,
+  //   inputValue,
+  //   inputValueCompareTo: singleValue && getOptionLabel(singleValue),
+  //   isFocusedAndValueIsSameAsSearch,
+  // });
 
   const data = React.useMemo(
     () =>

@@ -5,14 +5,14 @@ import { AutocompleteContext } from './AutocompleteContext';
 export default function createAutocompleteScrollable<
   T extends React.ComponentType<AutocompleteScrollableProps>
 >(WrappedComponent: T): React.ComponentType<T> {
-  return function (rest) {
+  return React.forwardRef(function (rest, ref) {
     const { scrollableRef, scrollX, scrollY, scrollableProps } =
       useScrollableProps();
     const WW = WrappedComponent as any;
     return (
       <AutocompleteContext.Provider value={{ scrollableRef, scrollX, scrollY }}>
-        <WW {...rest} {...scrollableProps} />
+        <WW ref={ref} {...rest} {...scrollableProps} />
       </AutocompleteContext.Provider>
     );
-  };
+  }) as any;
 }
