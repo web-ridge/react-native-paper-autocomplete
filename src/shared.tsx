@@ -1,4 +1,5 @@
 import {
+  runOnJS,
   useAnimatedRef,
   useAnimatedScrollHandler,
   useSharedValue,
@@ -24,7 +25,7 @@ export type AutocompleteScrollableProps = {
     | undefined;
 };
 
-export function useScrollableProps(props: ScrollViewProps, ref: any) {
+export function useScrollableProps({ onScroll }: ScrollViewProps, ref: any) {
   const scrollableRef = useAnimatedRef<any>();
   const scrollX = useSharedValue(0);
   const scrollY = useSharedValue(0);
@@ -32,7 +33,11 @@ export function useScrollableProps(props: ScrollViewProps, ref: any) {
     const { x, y } = e.contentOffset;
     scrollX.value = x;
     scrollY.value = y;
-    props?.onScroll?.(e as any);
+
+    if (onScroll) {
+      // https://github.com/software-mansion/react-native-reanimated/issues/2426
+      runOnJS(onScroll)(e as any);
+    }
   });
   const scrollableProps: AutocompleteScrollableProps = {
     ref: mergeRefs([scrollableRef, ref]),
