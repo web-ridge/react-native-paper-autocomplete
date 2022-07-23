@@ -11,7 +11,7 @@ export default function createAutocompleteScrollable<
     const WW = WrappedComponent as any;
     return (
       <AutocompleteContext.Provider value={{ scrollableRef, scrollX, scrollY }}>
-        <WW ref={ref} {...rest} {...scrollableProps} />
+        <WW {...rest} {...scrollableProps} />
       </AutocompleteContext.Provider>
     );
   }) as any;

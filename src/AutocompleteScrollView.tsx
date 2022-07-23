@@ -9,7 +9,7 @@ function AutocompleteScrollView(rest: ScrollViewProps, ref: any) {
     useScrollableProps(rest, ref);
   return (
     <AutocompleteContext.Provider value={{ scrollableRef, scrollX, scrollY }}>
-      <Animated.ScrollView ref={ref} {...rest} {...scrollableProps} />
+      <Animated.ScrollView {...rest} {...scrollableProps} />
     </AutocompleteContext.Provider>
   );
 }

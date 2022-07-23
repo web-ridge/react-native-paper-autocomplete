@@ -10,7 +10,7 @@ function AutocompleteFlatList<T>(rest: FlatListProps<T>, ref: any) {
   const Flat = Animated.FlatList as any;
   return (
     <AutocompleteContext.Provider value={{ scrollableRef, scrollX, scrollY }}>
-      <Flat ref={ref} {...rest} {...scrollableProps} />
+      <Flat {...rest} {...scrollableProps} />
     </AutocompleteContext.Provider>
   );
 }
