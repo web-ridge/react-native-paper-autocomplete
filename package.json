@@ -1,6 +1,6 @@
 {
   "name": "react-native-paper-autocomplete",
-  "version": "0.11.1",
+  "version": "0.11.2",
   "description": "Great autocomplete package for React Native Paper",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
