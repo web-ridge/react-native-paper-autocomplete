@@ -8,6 +8,7 @@ import type {
   NativeSyntheticEvent,
   ScrollViewProps,
 } from 'react-native';
+import { mergeRefs } from './mergeRefs';
 
 export type AutocompleteScrollableProps = {
   ref?: any;
@@ -23,7 +24,7 @@ export type AutocompleteScrollableProps = {
     | undefined;
 };
 
-export function useScrollableProps(props: ScrollViewProps) {
+export function useScrollableProps(props: ScrollViewProps, ref: any) {
   const scrollableRef = useAnimatedRef<any>();
   const scrollX = useSharedValue(0);
   const scrollY = useSharedValue(0);
@@ -34,7 +35,7 @@ export function useScrollableProps(props: ScrollViewProps) {
     props?.onScroll?.(e as any);
   });
   const scrollableProps: AutocompleteScrollableProps = {
-    ref: scrollableRef,
+    ref: mergeRefs([scrollableRef, ref]),
     scrollEventThrottle: 16,
     keyboardShouldPersistTaps: 'handled',
     onScroll: scrollHandler,

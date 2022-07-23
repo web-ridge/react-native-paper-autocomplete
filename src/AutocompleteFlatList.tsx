@@ -6,7 +6,7 @@ import { useScrollableProps } from './shared';
 
 function AutocompleteFlatList<T>(rest: FlatListProps<T>, ref: any) {
   const { scrollableRef, scrollX, scrollY, scrollableProps } =
-    useScrollableProps(rest);
+    useScrollableProps(rest, ref);
   const Flat = Animated.FlatList as any;
   return (
     <AutocompleteContext.Provider value={{ scrollableRef, scrollX, scrollY }}>
