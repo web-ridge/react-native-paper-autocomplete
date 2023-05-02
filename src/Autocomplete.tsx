@@ -75,6 +75,7 @@ export interface AutocompleteBaseProps<ItemT> {
   groupBy?: (option: ItemT) => string;
   renderInput?: (params: TextInputProps) => any;
   style?: ViewStyle;
+  disableInputPrefixIcon?: boolean;
   getOptionLabel?: (option: ItemT) => string;
   getOptionDescription?: (option: ItemT) => string | number;
   getOptionValue?: (option: ItemT) => string | number;
@@ -444,7 +445,9 @@ export default function Autocomplete<ItemT>(
           blurOnSubmit={false}
           value={hasMultipleValue || inputValue.length > 0 ? ' ' : ''}
           left={
-            textInputIcon ? <TextInput.Icon icon={textInputIcon} /> : undefined
+            textInputIcon && !props.disableInputPrefixIcon ? (
+              <TextInput.Icon icon={textInputIcon} />
+            ) : undefined
           }
           {...inputProps}
           style={[inputProps.style, styles.full]}
