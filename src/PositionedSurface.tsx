@@ -13,7 +13,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import usePosition from './usePosition';
 import AnimatedSurface from './AnimatedSurface';
-import type { DarkTheme } from 'react-native-paper';
+import type { MD3DarkTheme } from 'react-native-paper';
 import useKeyboardHeight from './useKeyboardHeight';
 
 const SCROLLING_PADDING = 120;
@@ -35,7 +35,7 @@ export default function PositionedSurface({
   dropdownWidth: SharedValue<number>;
   inputContainerHeight: SharedValue<number>;
   children: any;
-  theme: typeof DarkTheme;
+  theme: typeof MD3DarkTheme;
 }) {
   const dimensions = useWindowDimensions();
   const keyboardHeight = useKeyboardHeight(dimensions);

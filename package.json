@@ -26,10 +26,10 @@
     "typescript": "tsc --noEmit",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "prepare": "bob build",
-    "release": "release-it",
     "example": "yarn --cwd example",
     "pods": "cd example && pod-install --quiet",
-    "bootstrap": "yarn example && yarn && yarn pods"
+    "bootstrap": "yarn example && yarn && yarn pods",
+    "release": "release-it --ci --github.autoGenerate"
   },
   "keywords": [
     "react-native",
@@ -69,7 +69,7 @@
     "react-native": "0.63.4",
     "react-native-builder-bob": "^",
     "react-native-gesture-handler": "^2.1.0",
-    "react-native-paper": "^4.11.1",
+    "react-native-paper": "^5.7.0",
     "react-native-reanimated": "^2.3.1",
     "release-it": "^14.2.2",
     "typescript": "^4.1.3",

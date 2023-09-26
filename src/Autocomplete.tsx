@@ -75,6 +75,7 @@ export interface AutocompleteBaseProps<ItemT> {
   groupBy?: (option: ItemT) => string;
   renderInput?: (params: TextInputProps) => any;
   style?: ViewStyle;
+  disableInputPrefixIcon?: boolean;
   getOptionLabel?: (option: ItemT) => string;
   getOptionDescription?: (option: ItemT) => string | number;
   getOptionValue?: (option: ItemT) => string | number;
@@ -357,9 +358,9 @@ export default function Autocomplete<ItemT>(
   const highlightedColor = React.useMemo(
     () =>
       theme.dark
-        ? Color(theme.colors.text).alpha(0.2).rgb().string()
-        : Color(theme.colors.text).alpha(0.1).rgb().string(),
-    [theme.dark, theme.colors.text]
+        ? Color(theme.colors.onBackground).alpha(0.2).rgb().string()
+        : Color(theme.colors.onBackground).alpha(0.1).rgb().string(),
+    [theme.dark, theme.colors.onBackground]
   );
 
   const innerListProps = {
@@ -444,7 +445,9 @@ export default function Autocomplete<ItemT>(
           blurOnSubmit={false}
           value={hasMultipleValue || inputValue.length > 0 ? ' ' : ''}
           left={
-            textInputIcon ? <TextInput.Icon name={textInputIcon} /> : undefined
+            textInputIcon && !props.disableInputPrefixIcon ? (
+              <TextInput.Icon icon={textInputIcon} />
+            ) : undefined
           }
           {...inputProps}
           style={[inputProps.style, styles.full]}

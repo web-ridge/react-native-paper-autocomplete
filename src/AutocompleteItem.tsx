@@ -23,7 +23,7 @@ function AutocompleteItem<T>({
 }) {
   return (
     <List.Item
-      touchSoundDisabled={undefined}
+      android_disableSound={undefined}
       testID={testID}
       accessibilityRole="menuitem"
       accessibilityState={{
