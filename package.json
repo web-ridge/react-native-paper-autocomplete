@@ -30,7 +30,8 @@
     "pods": "cd example && pod-install --quiet",
     "release": "release-it --ci --github.autoGenerate",
     "bootstrap": "yarn example && yarn && yarn pods",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepack": "bob build"
   },
   "keywords": [
     "react-native",
