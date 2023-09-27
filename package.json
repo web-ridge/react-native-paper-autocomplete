@@ -29,7 +29,8 @@
     "example": "yarn --cwd example",
     "pods": "cd example && pod-install --quiet",
     "release": "release-it --ci --github.autoGenerate",
-    "bootstrap": "yarn example && yarn && yarn pods"
+    "bootstrap": "yarn example && yarn && yarn pods",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "react-native",
